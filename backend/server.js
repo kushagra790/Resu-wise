@@ -19,14 +19,16 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 // Routes
 const analyzeRoutes = require('./routes/analyze');
 const historyRoutes = require('./routes/history');
+const quizRoutes = require('./routes/quiz');
 
 // Root endpoint
 app.get('/', (req, res) => {
-  res.json({ message: 'Welcome to ResuWise Backend API', version: '1.0.0', endpoints: { analyze: '/api/analyze', history: '/api/history', health: '/health' } });
+  res.json({ message: 'Welcome to ResuWise Backend API', version: '1.0.0', endpoints: { analyze: '/api/analyze', history: '/api/history', quiz: '/api/quiz', health: '/health' } });
 });
 
 app.use('/api/analyze', analyzeRoutes);
 app.use('/api/history', historyRoutes);
+app.use('/api/quiz', quizRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
