@@ -1,9 +1,10 @@
 /**
  * TF-IDF Vectorizer with Advanced NLP Preprocessing
- * Uses natural library for tokenization, stop word removal, and stemming
+ * Uses natural library for tokenization, stop word removal, and keyword normalization
  */
 
 const natural = require('natural');
+const { normalizeToken } = require('./keywordNormalizer');
 
 const tokenizer = new natural.WordTokenizer();
 const stemmer = natural.PorterStemmer;
@@ -28,9 +29,9 @@ class TFIDFVectorizer {
     this.vocabulary = new Map();
     this.idf = new Map();
     this.documents = [];
-    this.enableStemming = options.enableStemming !== false; // Default: true
+    this.enableStemming = options.enableStemming === true; // Default: false - DISABLED for better word preservation
     this.enableStopWordRemoval = options.enableStopWordRemoval !== false; // Default: true
-    this.minTokenLength = options.minTokenLength || 2;
+    this.minTokenLength = options.minTokenLength || 1; // Changed from 2 to 1 to keep more meaningful tokens
   }
 
   /**
@@ -89,7 +90,7 @@ class TFIDFVectorizer {
 
   /**
    * Full preprocessing pipeline
-   * Order: lowercase -> remove special chars -> tokenize -> remove stop words -> stem -> filter short
+   * Order: lowercase -> remove special chars -> tokenize -> remove stop words -> normalize keywords -> filter short
    */
   preprocess(text) {
     if (!text || typeof text !== 'string') {
@@ -108,8 +109,8 @@ class TFIDFVectorizer {
     // Step 4: Remove stop words
     tokens = this.removeStopWords(tokens);
 
-    // Step 5: Apply stemming
-    tokens = this.applyStemming(tokens);
+    // Step 5: Normalize keywords (e.g., "node.js" → "nodejs")
+    tokens = tokens.map(token => normalizeToken(token));
 
     // Step 6: Filter short tokens and remove empty strings
     tokens = this.filterShortTokens(tokens).filter(t => t && t.trim().length > 0);

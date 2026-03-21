@@ -28,6 +28,13 @@ export default function ResultsSection({ results, onBackToAnalysis, onHome }) {
     providedSkills = []
   } = results;
 
+  console.log('[ResultsSection] Received results:', {
+    matchPercentage,
+    atsScore,
+    hasMatchPercentage: results.hasOwnProperty('matchPercentage'),
+    allKeys: Object.keys(results)
+  });
+
   const handleDownloadPDF = async () => {
     try {
       setIsDownloading(true);
@@ -176,10 +183,12 @@ export default function ResultsSection({ results, onBackToAnalysis, onHome }) {
         {/* Score Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
           <div className="bg-[#0a0a0a] border border-white/6 rounded-xl p-8 flex items-center justify-center hover:border-blue-600/25 transition-all duration-200">
-            <CircularProgress percentage={matchPercentage} label="Resume Match Score" sublabel="TF-IDF Cosine Similarity" />
+            {console.log('[CircularProgress] Displaying matchPercentage:', matchPercentage)}
+            <CircularProgress percentage={matchPercentage} label="Resume Match Score" sublabel="Combined semantic + ATS analysis" />
           </div>
           <div className="bg-[#0a0a0a] border border-white/6 rounded-xl p-8 flex items-center justify-center hover:border-blue-600/25 transition-all duration-200">
-            <CircularProgress percentage={atsScore} label="ATS Compatibility" sublabel="Keyword & format analysis" />
+            {console.log('[CircularProgress] Displaying atsScore:', atsScore)}
+            <CircularProgress percentage={atsScore} label="ATS Compatibility" sublabel="Skills, keywords & formatting" />
           </div>
         </div>
 

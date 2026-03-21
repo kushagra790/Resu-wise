@@ -41,6 +41,10 @@ export default function AnalysisPage({ onBack }) {
       if (response.data.success) {
         console.log('✅ Full API Response:', response.data);
         console.log('✅ Analysis Data:', response.data.data);
+        console.log('📊 Score Breakdown:');
+        console.log('   - matchPercentage:', response.data.data.matchPercentage);
+        console.log('   - tfidfScore:', response.data.data.tfidfScore);
+        console.log('   - atsScore:', response.data.data.atsScore);
         console.log('Matched Skills:', response.data.data.matchedSkills);
         console.log('ATS Breakdown:', response.data.data.atsScoreBreakdown);
         setResults(response.data.data);
