@@ -41,11 +41,38 @@ export default function Dashboard() {
               {/* Quick Stats */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
                 {[
-                  { icon: '📊', title: 'AI Analysis', desc: 'Get detailed resume-JD matching scores' },
-                  { icon: '📋', title: 'History', desc: 'Access all your previous analyses' },
-                  { icon: '🔒', title: 'Private', desc: 'All your data is encrypted and secure' },
+                  { 
+                    icon: '📊', 
+                    title: 'AI Analysis', 
+                    desc: 'Get detailed resume-JD matching scores',
+                    action: 'analyze'
+                  },
+                  { 
+                    icon: '📋', 
+                    title: 'History', 
+                    desc: 'Access all your previous analyses',
+                    action: 'history'
+                  },
+                  { 
+                    icon: '🔒', 
+                    title: 'Private', 
+                    desc: 'All your data is encrypted and secure',
+                    action: 'private'
+                  },
                 ].map((card, i) => (
-                  <div key={i} className="bg-[#0a0a0a] border border-white/6 rounded-xl p-6 hover:border-blue-600/25 transition-all duration-200">
+                  <div 
+                    key={i} 
+                    onClick={() => {
+                      if (card.action === 'analyze') {
+                        handleStartAnalysis();
+                      } else if (card.action === 'history') {
+                        setShowHistory(!showHistory);
+                      }
+                    }}
+                    className={`bg-[#0a0a0a] border border-white/6 rounded-xl p-6 hover:border-blue-600/25 transition-all duration-200 ${
+                      card.action !== 'private' ? 'cursor-pointer hover:bg-blue-600/5' : ''
+                    }`}
+                  >
                     <div className="text-3xl mb-3">{card.icon}</div>
                     <h3 className="text-white font-semibold mb-1">{card.title}</h3>
                     <p className="text-gray-600 text-sm">{card.desc}</p>
