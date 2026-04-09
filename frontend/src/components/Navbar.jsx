@@ -1,7 +1,14 @@
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 export default function Navbar() {
   const navigate = useNavigate();
+  const { user, isAuthenticated, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
 
   return (
     <nav className="bg-black/95 text-white sticky top-0 z-40 border-b border-blue-600/20 backdrop-blur-xl">
@@ -25,21 +32,56 @@ export default function Navbar() {
 
           {/* Navigation Items */}
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => navigate('/dashboard')}
-              className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 border border-transparent hover:border-blue-600/30 transition-all duration-200"
-            >
-              <span className="text-base">📊</span>
-              Dashboard
-            </button>
+            {isAuthenticated && (
+              <>
+                <span className="hidden sm:inline text-sm text-gray-400">
+                  Welcome, <span className="text-blue-400 font-medium">{user?.name}</span>
+                </span>
+                <button
+                  onClick={() => navigate('/dashboard')}
+                  className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 border border-transparent hover:border-blue-600/30 transition-all duration-200"
+                >
+                  <span className="text-base">📊</span>
+                  Dashboard
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-red-400 hover:bg-red-500/5 border border-transparent hover:border-red-500/30 transition-all duration-200"
+                >
+                  <span className="text-base">🚪</span>
+                  Logout
+                </button>
+              </>
+            )}
 
-            <button
-              onClick={() => navigate('/')}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm font-semibold transition-all duration-200 shadow-lg shadow-blue-600/25 hover:shadow-blue-500/40"
-            >
-              <span className="text-base">🏠</span>
-              Home
-            </button>
+            {!isAuthenticated && (
+              <>
+                <button
+                  onClick={() => navigate('/login')}
+                  className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 border border-transparent hover:border-blue-600/30 transition-all duration-200"
+                >
+                  <span className="text-base">🔑</span>
+                  Login
+                </button>
+                <button
+                  onClick={() => navigate('/signup')}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm font-semibold transition-all duration-200 shadow-lg shadow-blue-600/25 hover:shadow-blue-500/40"
+                >
+                  <span className="text-base">✍️</span>
+                  Sign Up
+                </button>
+              </>
+            )}
+
+            {!isAuthenticated && (
+              <button
+                onClick={() => navigate('/')}
+                className="sm:hidden inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm font-semibold transition-all duration-200 shadow-lg shadow-blue-600/25 hover:shadow-blue-500/40"
+              >
+                <span className="text-base">🏠</span>
+                Home
+              </button>
+            )}
           </div>
         </div>
       </div>
