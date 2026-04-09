@@ -31,12 +31,19 @@ export default function Navbar() {
           </div>
 
           {/* Navigation Items */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {isAuthenticated && (
               <>
                 <span className="hidden sm:inline text-sm text-gray-400">
                   Welcome, <span className="text-blue-400 font-medium">{user?.name}</span>
                 </span>
+                <button
+                  onClick={() => navigate('/profile')}
+                  className="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 border border-transparent hover:border-blue-600/30 transition-all duration-200"
+                  title="Edit profile"
+                >
+                  <span className="text-base">⚙️</span>
+                </button>
                 <button
                   onClick={() => navigate('/dashboard')}
                   className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 border border-transparent hover:border-blue-600/30 transition-all duration-200"

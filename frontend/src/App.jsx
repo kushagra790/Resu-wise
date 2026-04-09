@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard';
 import ResumeBuilderPage from './pages/ResumeBuilderPage';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import Profile from './pages/Profile';
 import ProtectedRoute from './components/ProtectedRoute';
 
 export default function App() {
@@ -36,6 +37,19 @@ export default function App() {
               <div className="min-h-screen bg-gradient-to-br from-black to-black">
                 <Navbar />
                 <Dashboard />
+              </div>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Profile Route - Protected */}
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <div className="min-h-screen bg-gradient-to-br from-black to-black">
+                <Navbar />
+                <Profile />
               </div>
             </ProtectedRoute>
           }
