@@ -245,12 +245,14 @@ NICE-TO-HAVE
 
         {/* Header */}
         <div className="mb-8">
-          <button
-            onClick={onBack}
-            className="mb-5 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium text-gray-500 hover:text-white hover:bg-white/5 border border-transparent hover:border-white/10 transition-all duration-200"
-          >
-            ← Back to Dashboard
-          </button>
+          <div className="flex items-center gap-2 mb-5">
+            <button
+              onClick={onBack}
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium text-gray-500 hover:text-white hover:bg-white/5 border border-transparent hover:border-white/10 transition-all duration-200"
+            >
+              ← Back to Dashboard
+            </button>
+          </div>
           <h2 className="text-3xl font-bold text-white">
             Resume <span className="text-blue-500">Analysis Engine</span>
           </h2>
