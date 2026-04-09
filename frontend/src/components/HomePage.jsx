@@ -40,25 +40,25 @@ export default function HomePage() {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-600/10 border border-blue-600/30 rounded-full text-sm text-blue-400 font-medium">
               <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></span>
-              Advanced AI-Powered Resume Analysis
+              Smart Resume Analysis
             </div>
 
             {/* Headline */}
             <div className="space-y-5">
               <h1 className="text-6xl md:text-7xl font-black leading-[1.05] tracking-tight">
-                <span className="text-white">AI-Powered</span>
+                <span className="text-white">Smart</span>
                 <br />
                 <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600">
                   Resume Intelligence
                 </span>
               </h1>
               <p className="text-xl text-gray-400 font-light max-w-2xl mx-auto leading-relaxed">
-                Instantly analyze how well your resume aligns with any job description using advanced NLP and machine learning.
+                Not Getting Interviews? Fix Your Resume.
               </p>
             </div>
 
             <p className="text-base text-gray-600 max-w-xl mx-auto">
-              TF-IDF vectorization · Cosine similarity · Intelligent skill extraction · ATS optimization
+              Smart Suggestions • Instant Feedback • Easy Fixes
             </p>
 
             {/* CTA Buttons */}

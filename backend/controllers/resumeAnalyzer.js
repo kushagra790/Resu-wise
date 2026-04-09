@@ -8,9 +8,10 @@ const { normalizeKeyword, normalizeKeywords, KEYWORD_NORMALIZATION } = require('
  */
 const SKILL_KEYWORDS = {
   'Programming Languages': [
-    'javascript', 'python', 'java', 'csharp', 'c#', 'typescript', 'ruby', 'php', 'go', 
-    'golang', 'rust', 'kotlin', 'swift', 'objective-c', 'c++', 'c', 'scala', 'perl', 'r',
-    'matlab', 'assembly', 'haskell', 'clojure', 'groovy', 'bash', 'shell'
+    // NOTE: Removed 'go', 'r', 'c' — too short, cause false positives on common English words
+    'javascript', 'python', 'java', 'csharp', 'c#', 'typescript', 'ruby', 'php',
+    'golang', 'rust', 'kotlin', 'swift', 'objective-c', 'c++', 'scala', 'perl',
+    'matlab', 'haskell', 'clojure', 'groovy', 'bash', 'shell', 'powershell'
   ],
   'Frontend': [
     'react', 'reactjs', 'react.js', 'angular', 'angularjs', 'vue', 'vuejs', 'vue.js',
@@ -21,28 +22,48 @@ const SKILL_KEYWORDS = {
   'Backend': [
     'nodejs', 'node.js', 'express', 'fastapi', 'flask', 'django', 'asp.net', 'asp net',
     'spring', 'springboot', 'spring boot', 'rails', 'laravel', 'symfony', 'nest.js', 'nestjs',
-    'fastify', 'hapi', 'koa', 'deno', 'java', 'python', 'c#', 'csharp', 'go', 'golang', 'rust'
+    'fastify', 'hapi', 'koa', 'deno', 'golang', 'rust', 'sqlmodel', 'sqlalchemy',
+    'pydantic', 'uvicorn', 'gunicorn', 'celery', 'rabbitmq', 'kafka'
   ],
   'Databases': [
-    'sql', 'mysql', 'postgresql', 'postgres', 'mongodb', 'mongodb', 'firebase', 'firestore',
+    'sql', 'mysql', 'postgresql', 'postgres', 'mongodb', 'firebase', 'firestore',
     'redis', 'cassandra', 'elasticsearch', 'dynamodb', 'oracle', 'mssql', 'sqlite', 'mariadb',
-    'couchdb', 'neo4j', 'influxdb', 'etcd', 'memcached', 'elasticsearch', 'solr'
+    'couchdb', 'neo4j', 'influxdb', 'memcached', 'solr', 'supabase', 'planetscale',
+    'sqlalchemy', 'sqlmodel', 'prisma', 'sequelize', 'mongoose'
   ],
   'DevOps': [
     'docker', 'kubernetes', 'k8s', 'jenkins', 'gitlab-ci', 'github actions', 'github-actions',
-    'circleci', 'circle ci', 'travis ci', 'travisci', 'ansible', 'puppet', 'chef', 'terraform',
+    'circleci', 'travis ci', 'ansible', 'puppet', 'chef', 'terraform',
     'helm', 'prometheus', 'grafana', 'elk', 'datadog', 'newrelic', 'splunk', 'cloudwatch'
   ],
   'Cloud': [
     'aws', 'amazon web services', 'azure', 'microsoft azure', 'gcp', 'google cloud',
-    'ibm cloud', 'heroku', 'digitalocean', 'linode', 'vercel', 'netlify', 'cloudflare',
-    'ec2', 's3', 's3bucket', 'lambda', 'rds', 'ecs', 'app engine', 'cloud storage', 'cloud run'
+    'ibm cloud', 'heroku', 'digitalocean', 'vercel', 'netlify', 'cloudflare',
+    'ec2', 's3', 'lambda', 'rds', 'ecs', 'app engine', 'cloud run'
   ],
   'Tools & Platforms': [
     'git', 'github', 'gitlab', 'bitbucket', 'jira', 'confluence', 'slack', 'linux', 'windows',
-    'macos', 'mac', 'unix', 'vim', 'vscode', 'intellij', 'eclipse', 'xcode', 'postman',
-    'swagger', 'npm', 'yarn', 'pip', 'maven', 'gradle', 'make', 'cmake', 'docker', 'nginx',
-    'apache', 'pm2', 'supervisord', 'systemd', 'vagrant', 'vmware', 'virtualbox'
+    'macos', 'unix', 'vim', 'vscode', 'intellij', 'eclipse', 'xcode', 'postman',
+    'swagger', 'npm', 'yarn', 'pip', 'maven', 'gradle', 'nginx',
+    'apache', 'pm2', 'vagrant', 'vmware', 'virtualbox', 'jupyter', 'jupyter notebook'
+  ],
+  'Data Science & ML': [
+    // Python ML/Data ecosystem — commonly listed in JDs as section headers like
+    // "Required Skills", "Key Skills", "Requirements", "Qualifications"
+    'numpy', 'pandas', 'matplotlib', 'seaborn', 'plotly', 'scipy',
+    'scikit-learn', 'sklearn', 'tensorflow', 'keras', 'pytorch', 'torch',
+    'huggingface', 'transformers', 'langchain', 'openai', 'anthropic',
+    'xgboost', 'lightgbm', 'catboost', 'opencv', 'pillow', 'nltk', 'spacy',
+    'pydantic', 'sqlalchemy', 'sqlmodel', 'alembic', 'airflow',
+    'mlflow', 'wandb', 'dvc', 'bentoml', 'fastai', 'stable diffusion',
+    'machine learning', 'deep learning', 'nlp', 'computer vision',
+    'data analysis', 'data science', 'data engineering', 'etl',
+    'statistics', 'linear algebra', 'neural network', 'llm', 'generative ai'
+  ],
+  'APIs & Architecture': [
+    'rest', 'restful', 'rest api', 'graphql', 'grpc', 'websocket', 'webhook',
+    'microservices', 'monolith', 'serverless', 'event-driven', 'message queue',
+    'api gateway', 'load balancer', 'cdn', 'oauth', 'jwt', 'openapi'
   ]
 };
 
@@ -57,6 +78,13 @@ function escapeRegex(string) {
  * Extract skills from text grouped by category
  * Returns object with categories as keys and arrays of found skills as values
  */
+// Skills that are too short or common to match with simple \b word boundary.
+// These require a stricter context (comma/bullet list, colon list, etc.) to avoid
+// false positives like "GD Round" being picked up as Go language.
+const CONTEXT_SENSITIVE_SKILLS = new Set([
+  // Removed entirely — too ambiguous as single words
+]);
+
 function extractSkillsByCategory(text) {
   const lowerText = text.toLowerCase();
   const foundSkills = {};
@@ -69,12 +97,22 @@ function extractSkillsByCategory(text) {
   // Search for each skill
   Object.entries(SKILL_KEYWORDS).forEach(([category, keywords]) => {
     keywords.forEach(keyword => {
-      // Use word boundary regex for case-insensitive matching
-      // Escape special regex characters in keyword
       const escapedKeyword = escapeRegex(keyword);
-      const regex = new RegExp(`\\b${escapedKeyword}\\b`, 'gi');
-      if (regex.test(lowerText)) {
-        // Avoid duplicates by checking if skill already added
+
+      // For multi-word skills (e.g. "machine learning", "spring boot"), do a simple substring check
+      // For single-word skills, use strict word-boundary matching
+      let found = false;
+      if (keyword.includes(' ')) {
+        // Multi-word: check full phrase with word boundaries
+        const regex = new RegExp(`\\b${escapedKeyword}\\b`, 'i');
+        found = regex.test(lowerText);
+      } else {
+        // Single word: strict word boundary — avoids 'go' matching 'going', 'good'
+        const regex = new RegExp(`(?<![a-z0-9])${escapedKeyword}(?![a-z0-9])`, 'i');
+        found = regex.test(lowerText);
+      }
+
+      if (found) {
         const skillLower = keyword.toLowerCase();
         if (!foundSkills[category].find(s => s.toLowerCase() === skillLower)) {
           foundSkills[category].push(keyword);

@@ -19,7 +19,7 @@ export default function Navbar() {
               <h1 className="text-lg font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-blue-200">
                 ResuWise
               </h1>
-              <p className="text-[10px] text-blue-400/60 font-medium tracking-widest uppercase">AI Resume Platform</p>
+              <p className="text-[10px] text-blue-400/60 font-medium tracking-widest uppercase">Smart Resume Platform</p>
             </div>
           </div>
 

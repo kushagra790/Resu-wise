@@ -37,9 +37,19 @@ const KEYWORD_NORMALIZATION = {
   // Common typos and formats
   'cplus': ['c++', 'cpp', 'c plus plus'],
   'dotnet': ['.net', 'dotnet', '.net framework'],
-  'golang': ['go', 'golang', 'google go'],
+  // NOTE: 'go' removed from golang variations — too ambiguous (matches "GD round", "go to" etc.)
+  // Only 'golang' detects Go language now
+  'golang': ['golang', 'google go'],
   'csharp': ['c#', 'csharp', 'c-sharp'],
   'objective-c': ['objective-c', 'objc', 'objective c'],
+
+  // ML / Python ecosystem normalizations
+  'scikit-learn': ['scikit-learn', 'sklearn', 'scikit learn'],
+  'pytorch': ['pytorch', 'torch'],
+  'tensorflow': ['tensorflow', 'tf'],
+  'sqlalchemy': ['sqlalchemy', 'sql alchemy'],
+  'sqlmodel': ['sqlmodel', 'sql model'],
+  'huggingface': ['huggingface', 'hugging face', 'hf'],
 };
 
 /**
