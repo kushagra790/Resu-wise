@@ -110,10 +110,11 @@ export default function Dashboard() {
                 </div>
                 <button 
                   onClick={handleBackHome}
-                  className="mt-2 text-gray-400 hover:text-white text-3xl font-light transition-colors duration-300 hover:scale-110"
+                  className="mt-2 flex items-center gap-2 text-gray-400 hover:text-white text-lg font-light transition-colors duration-300 hover:scale-110 cursor-pointer"
                   title="Back to Home"
                 >
-                  ←
+                  <span className="text-3xl">←</span>
+                  <span>Back to Home</span>
                 </button>
               </div>
 
