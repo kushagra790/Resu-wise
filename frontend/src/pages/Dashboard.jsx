@@ -42,12 +42,12 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* Main Action Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+              {/* Main Action Cards - Centered */}
+              <div className="flex flex-col md:flex-row items-center justify-center gap-4 mb-16">
                 {/* AI Analysis Card */}
                 <div 
                   onClick={handleStartAnalysis}
-                  className="group relative bg-gradient-to-br from-blue-600/20 to-blue-900/10 border border-blue-600/40 rounded-2xl p-8 hover:border-blue-500/60 cursor-pointer transition-all duration-300 hover:shadow-2xl hover:shadow-blue-600/20 hover:-translate-y-1"
+                  className="group relative bg-gradient-to-br from-blue-600/20 to-blue-900/10 border border-blue-600/40 rounded-2xl p-8 hover:border-blue-500/60 cursor-pointer transition-all duration-300 hover:shadow-2xl hover:shadow-blue-600/20 hover:-translate-y-1 w-full md:w-96"
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <div className="relative z-10">
@@ -62,7 +62,7 @@ export default function Dashboard() {
                 </div>
 
                 {/* Decorative Emoji Section */}
-                <div className="flex items-center justify-center">
+                <div className="flex items-center justify-center h-96 md:h-auto">
                   <div className="text-9xl animate-bounce">📄</div>
                 </div>
               </div>
