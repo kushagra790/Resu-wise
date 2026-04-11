@@ -51,7 +51,7 @@ export default function Dashboard() {
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <div className="relative z-10">
-                    <div className="text-6xl mb-4 group-hover:scale-110 transition-transform duration-300">📊</div>
+                    <div className="text-6xl mb-4 group-hover:scale-105 transition-transform duration-300">📊</div>
                     <h2 className="text-3xl font-bold text-white mb-3">AI Resume Analysis</h2>
                     <p className="text-gray-400 mb-6 text-lg">Get your resume match score and see exactly how competitive you are for your target role</p>
                     <div className="flex items-center gap-2 text-blue-400 font-semibold group-hover:gap-3 transition-all">
