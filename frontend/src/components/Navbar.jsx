@@ -45,11 +45,11 @@ export default function Navbar() {
                   <span className="text-base">⚙️</span>
                 </button>
                 <button
-                  onClick={() => navigate('/dashboard')}
+                  onClick={() => navigate('/')}
                   className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 border border-transparent hover:border-blue-600/30 transition-all duration-200"
                 >
-                  <span className="text-base">📊</span>
-                  Dashboard
+                  <span className="text-base">🏠</span>
+                  Home
                 </button>
                 <button
                   onClick={handleLogout}

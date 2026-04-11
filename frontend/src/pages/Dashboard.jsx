@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import AnalysisPage from '../components/AnalysisPage';
 import AnalysisHistory from '../components/AnalysisHistory';
 
@@ -6,6 +8,8 @@ export default function Dashboard() {
   const [currentPage, setCurrentPage] = useState('home');
   const [showHistory, setShowHistory] = useState(false);
   const [currentAnalysisId, setCurrentAnalysisId] = useState(null);
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   const handleStartAnalysis  = () => setCurrentPage('analysis');
   const handleBackHome = () => { setCurrentPage('home'); setShowHistory(false); };
@@ -29,13 +33,21 @@ export default function Dashboard() {
             <div className="max-w-6xl mx-auto">
 
               {/* Welcome Section */}
-              <div className="mb-16">
-                <h1 className="text-5xl md:text-6xl font-black text-white mb-4">
-                  Welcome back, <span className="text-blue-500">Kusha</span> 👋
-                </h1>
-                <p className="text-gray-400 text-lg md:text-xl">
-                  Let's analyze your resume and land that perfect job
-                </p>
+              <div className="mb-16 flex justify-between items-start">
+                <div>
+                  <h1 className="text-5xl md:text-6xl font-black text-white mb-4">
+                    Welcome, <span className="text-blue-500">{user?.name || 'User'}</span> 👋
+                  </h1>
+                  <p className="text-gray-400 text-lg md:text-xl">
+                    Let's analyze your resume and land that perfect job
+                  </p>
+                </div>
+                <button
+                  onClick={() => navigate('/')}
+                  className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-blue-400 hover:bg-blue-600/10 border border-transparent hover:border-blue-600/30 transition-all duration-200"
+                >
+                  ← Back to Home
+                </button>
               </div>
 
               {/* Main Action Cards */}
@@ -48,8 +60,8 @@ export default function Dashboard() {
                   <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <div className="relative z-10">
                     <div className="text-6xl mb-4 group-hover:scale-110 transition-transform duration-300">📊</div>
-                    <h2 className="text-3xl font-bold text-white mb-3">AI Analysis</h2>
-                    <p className="text-gray-400 mb-6 text-lg">Get detailed resume-JD matching scores and actionable insights to improve your profile</p>
+                    <h2 className="text-3xl font-bold text-white mb-3">AI Resume Analysis</h2>
+                    <p className="text-gray-400 mb-6 text-lg">Get your resume match score and see exactly how competitive you are for your target role</p>
                     <div className="flex items-center gap-2 text-blue-400 font-semibold group-hover:gap-3 transition-all">
                       <span>Start Now</span>
                       <span className="text-xl group-hover:translate-x-1 transition-transform">→</span>
@@ -72,36 +84,6 @@ export default function Dashboard() {
                       <span className="text-xl group-hover:translate-x-1 transition-transform">→</span>
                     </div>
                   </div>
-                </div>
-              </div>
-
-              {/* Quick Stats */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-16">
-                <div className="bg-[#0a0a0a] border border-white/8 rounded-xl p-6 hover:border-white/15 transition-all">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Total Analyses</h3>
-                    <span className="text-2xl">📈</span>
-                  </div>
-                  <p className="text-4xl font-bold text-white">12</p>
-                  <p className="text-xs text-gray-500 mt-2">This month: +3</p>
-                </div>
-
-                <div className="bg-[#0a0a0a] border border-white/8 rounded-xl p-6 hover:border-white/15 transition-all">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Avg Score</h3>
-                    <span className="text-2xl">⭐</span>
-                  </div>
-                  <p className="text-4xl font-bold text-green-400">78/100</p>
-                  <p className="text-xs text-gray-500 mt-2">Last analysis: 82/100</p>
-                </div>
-
-                <div className="bg-[#0a0a0a] border border-white/8 rounded-xl p-6 hover:border-white/15 transition-all">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Improvements</h3>
-                    <span className="text-2xl">🎯</span>
-                  </div>
-                  <p className="text-4xl font-bold text-blue-400">24</p>
-                  <p className="text-xs text-gray-500 mt-2">Skills identified</p>
                 </div>
               </div>
 
@@ -140,13 +122,13 @@ export default function Dashboard() {
                   </div>
                   <div className="space-y-3">
                     <div className="flex items-center gap-2 text-blue-400 text-sm">
-                      <span className="text-lg">⚡</span> ATS Score Calculation
+                      <span className="text-lg">⚡</span> Smart ATS Optimization for better visibility
                     </div>
                     <div className="flex items-center gap-2 text-blue-400 text-sm">
-                      <span className="text-lg">⚡</span> Skill Gap Analysis
+                      <span className="text-lg">⚡</span> Identify & highlight skills that matter
                     </div>
                     <div className="flex items-center gap-2 text-blue-400 text-sm">
-                      <span className="text-lg">⚡</span> PDF Export & Download
+                      <span className="text-lg">⚡</span> Export tailored resume recommendations
                     </div>
                   </div>
                 </div>
@@ -157,10 +139,10 @@ export default function Dashboard() {
                 <h2 className="text-2xl font-bold text-white mb-8">🎯 How It Works</h2>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                   {[
-                    { step: '1', title: 'Upload Resume', desc: 'Upload your resume or paste text' },
-                    { step: '2', title: 'Add Job Description', desc: 'Paste the job you want' },
-                    { step: '3', title: 'AI Analysis', desc: 'Get instant matching scores' },
-                    { step: '4', title: 'Download Results', desc: 'Get PDF with recommendations' },
+                    { step: '1', title: 'Upload Resume', desc: 'Share your resume in seconds' },
+                    { step: '2', title: 'Add Job Target', desc: 'Paste the job description' },
+                    { step: '3', title: 'Get AI Analysis', desc: 'Instant matching & insights' },
+                    { step: '4', title: 'Improve & Apply', desc: 'Get ready for success' },
                   ].map((item, i) => (
                     <div key={i} className="relative">
                       {i < 3 && (
