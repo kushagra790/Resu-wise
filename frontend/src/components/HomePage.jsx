@@ -53,31 +53,27 @@ export default function HomePage() {
             {/* Animated Badge */}
             <div className="inline-flex items-center gap-3 px-6 py-2.5 bg-gradient-to-r from-blue-600/20 to-cyan-600/20 border border-blue-500/40 rounded-full text-sm text-blue-300 font-semibold backdrop-blur-sm hover:border-blue-400/60 transition-all duration-300 cursor-default">
               <span className="w-2.5 h-2.5 bg-blue-500 rounded-full animate-pulse"></span>
-              <span>✨ AI-Powered Resume Analysis</span>
+              <span>✨ AI-Powered Insights</span>
               <span className="w-2.5 h-2.5 bg-cyan-500 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></span>
             </div>
 
             {/* Main Headline */}
             <div className="space-y-6">
-              <h1 className="text-7xl md:text-8xl font-black leading-[1.1] tracking-tighter">
-                <span className="text-white">Smart</span>
+              <h1 className="text-5xl md:text-6xl font-black leading-[1.1] tracking-tighter">
+                <span className="text-white">Get Interviews,</span>
                 <br />
                 <span className="bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-600 bg-clip-text text-transparent animate-pulse">
-                  Resume
-                </span>
-                <br />
-                <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent">
-                  Intelligence
+                  Not Rejections
                 </span>
               </h1>
               
-              <p className="text-2xl text-gray-300 font-light max-w-3xl mx-auto leading-relaxed">
-                Not Getting Interviews? <span className="text-blue-400 font-semibold">Fix Your Resume</span> with AI-Powered Analysis
+              <p className="text-lg text-gray-300 font-light max-w-3xl mx-auto leading-relaxed">
+                Your resume isn't getting through. <span className="text-blue-400 font-semibold">Our AI finds exactly what's holding you back</span> and fixes it in minutes.
               </p>
             </div>
 
-            <p className="text-lg text-gray-400 max-w-2xl mx-auto font-medium tracking-wide">
-              🎯 Smart Suggestions • ⚡ Instant Feedback • 🚀 Easy Fixes
+            <p className="text-base text-gray-400 max-w-2xl mx-auto font-medium tracking-wide">
+              📊 See Your Match Score • 💡 Get Specific Fixes • 🎯 Land More Interviews
             </p>
 
             {/* CTA Buttons */}
@@ -90,7 +86,7 @@ export default function HomePage() {
               >
                 <span className="relative z-10 flex items-center justify-center gap-3">
                   <span className="text-2xl group-hover:rotate-12 transition-transform duration-300">📄</span>
-                  Analyse Your Resume
+                  Analyze My Resume Now
                   <span className={`transform transition-all duration-300 ${isHovered === 'analyse' ? 'translate-x-2' : ''}`}>→</span>
                 </span>
                 <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-400 to-cyan-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
@@ -104,24 +100,10 @@ export default function HomePage() {
               >
                 <span className="relative z-10 flex items-center justify-center gap-3">
                   <span className="text-2xl group-hover:rotate-12 transition-transform duration-300">🏗️</span>
-                  Resume Builder
+                  Build a Better Resume
                   <span className={`transform transition-all duration-300 ${isHovered === 'builder' ? 'translate-x-2' : ''}`}>→</span>
                 </span>
               </button>
-            </div>
-
-            {/* Trust indicators with animations */}
-            <div className="pt-8 flex flex-wrap justify-center gap-8 text-sm">
-              {[
-                { icon: '✓', text: '95% Accuracy', delay: 0 },
-                { icon: '⚡', text: '<2 Seconds', delay: 0.2 },
-                { icon: '🔒', text: 'Secure & Private', delay: 0.4 }
-              ].map((item, i) => (
-                <div key={i} className="flex items-center gap-2 text-gray-300 opacity-0 animate-fadeIn" style={{ animationDelay: `${item.delay}s` }}>
-                  <span className="text-blue-400 text-lg">{item.icon}</span>
-                  <span className="font-medium">{item.text}</span>
-                </div>
-              ))}
             </div>
           </div>
         </section>
@@ -132,12 +114,12 @@ export default function HomePage() {
         <section className="py-32 px-4">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-20 space-y-4">
-              <p className="text-cyan-400 text-sm font-bold tracking-widest uppercase">Powerful Features</p>
-              <h2 className="text-5xl md:text-6xl font-black text-white">
-                Why Choose <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">ResuWise</span>?
+              <p className="text-cyan-400 text-sm font-bold tracking-widest uppercase">Proven Results</p>
+              <h2 className="text-3xl md:text-4xl font-black text-white">
+                Everything You Need to <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">Stand Out</span>
               </h2>
-              <p className="text-gray-400 text-xl max-w-2xl mx-auto">
-                Comprehensive tools designed to transform your resume and land your dream job
+              <p className="text-gray-400 text-base max-w-2xl mx-auto">
+                Our AI does what recruiters want—so your resume gets noticed.
               </p>
             </div>
 
@@ -145,22 +127,22 @@ export default function HomePage() {
               {[
                 { 
                   icon: '🎯', 
-                  title: 'Smart Semantic Matching', 
-                  desc: 'Advanced NLP and TF-IDF algorithms measure contextual alignment between your resume and job descriptions.',
+                  title: 'Match Your Target Jobs', 
+                  desc: 'We compare your resume to job descriptions and show you exactly what\'s missing. Get a real match score.',
                   color: 'from-blue-600 to-cyan-600',
                   border: 'border-blue-600/50'
                 },
                 { 
                   icon: '🔍', 
-                  title: 'Skill Gap Analysis', 
-                  desc: 'Identifies matched skills, missing competencies, and provides actionable improvement recommendations.',
+                  title: 'Find Your Skill Gaps', 
+                  desc: 'See which skills employers want that you haven\'t highlighted. Get specific suggestions to add them.',
                   color: 'from-cyan-600 to-teal-600',
                   border: 'border-cyan-600/50'
                 },
                 { 
                   icon: '⚡', 
-                  title: 'ATS Optimization', 
-                  desc: 'Evaluates structure, keywords, and formatting to maximize ATS compatibility and visibility.',
+                  title: 'Pass the ATS Filter', 
+                  desc: 'Most resumes get rejected by scanning software. We optimize yours to get past it and reach real people.',
                   color: 'from-purple-600 to-pink-600',
                   border: 'border-purple-600/50'
                 },
@@ -201,18 +183,16 @@ export default function HomePage() {
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-20 space-y-4">
               <p className="text-cyan-400 text-sm font-bold tracking-widest uppercase">Simple Process</p>
-              <h2 className="text-5xl md:text-6xl font-black text-white">Just <span className="text-cyan-400">3 Steps</span></h2>
-              <p className="text-gray-400 text-xl">Get insights in seconds</p>
+              <h2 className="text-5xl md:text-6xl font-black text-white">Get Results in <span className="text-cyan-400">3 Steps</span></h2>
+              <p className="text-gray-400 text-xl">No complicated process. Just fast results.</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
-              {/* Connector lines */}
-              <div className="hidden md:block absolute top-8 left-1/3 right-1/3 h-1 bg-gradient-to-r from-transparent via-blue-600/50 to-transparent"></div>
               
               {[
-                { num: '01', title: '📤 Upload Documents', desc: 'Paste text or upload your resume and job description.' },
-                { num: '02', title: '🤖 AI Analysis', desc: 'Our NLP engine processes and analyzes instantly.' },
-                { num: '03', title: '📊 Get Insights', desc: 'Receive detailed match score and recommendations.' },
+                { num: '01', title: 'Upload Your Resume', desc: 'Paste or upload your resume and the job you want.' },
+                { num: '02', title: 'We Analyze It', desc: 'Our AI instantly scans and compares in seconds.' },
+                { num: '03', title: 'Get Your Match Score', desc: 'See what fits, what\'s missing, and how to fix it.' },
               ].map((step, i) => (
                 <div key={i} className="group relative">
                   {/* Number background */}
@@ -226,28 +206,6 @@ export default function HomePage() {
                   {/* Content */}
                   <h3 className="text-xl font-bold text-white mb-3 group-hover:text-cyan-400 transition-colors duration-300">{step.title}</h3>
                   <p className="text-gray-400 leading-relaxed">{step.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ================================
-            STATS - ANIMATED COUNTERS
-            ================================ */}
-        <section className="py-32 px-4 bg-gradient-to-r from-blue-600/5 to-cyan-600/5 border-y border-white/10">
-          <div className="max-w-5xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-px bg-gradient-to-r from-blue-600/40 to-cyan-600/40 rounded-2xl overflow-hidden">
-              {[
-                { value: <><AnimatedCounter endValue={95} />%</>, label: 'Accuracy', emoji: '🎯' },
-                { value: <>&lt;<AnimatedCounter endValue={2} />s</>, label: 'Speed', emoji: '⚡' },
-                { value: <><AnimatedCounter endValue={500} />+</>, label: 'Skills', emoji: '📚' },
-                { value: <><AnimatedCounter endValue={10000} />+</>, label: 'Users', emoji: '👥' },
-              ].map((stat, i) => (
-                <div key={i} className="bg-gradient-to-br from-[#0a0a0a] to-[#050505] p-12 text-center group hover:from-blue-950/20 hover:to-cyan-950/20 transition-all duration-300 cursor-default">
-                  <div className="text-4xl mb-3">{stat.emoji}</div>
-                  <div className="text-5xl font-black bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent mb-3 group-hover:from-cyan-400 group-hover:to-purple-400 transition-all duration-300">{stat.value}</div>
-                  <p className="text-gray-300 font-semibold text-lg">{stat.label}</p>
                 </div>
               ))}
             </div>
@@ -289,12 +247,12 @@ export default function HomePage() {
           <div className="max-w-4xl mx-auto text-center space-y-10">
             <div className="space-y-6">
               <h2 className="text-6xl md:text-7xl font-black leading-tight">
-                <span className="text-white">Ready to land your</span>
+                <span className="text-white">Stop Losing Jobs to</span>
                 <br />
-                <span className="bg-gradient-to-r from-blue-400 via-cyan-400 to-purple-400 bg-clip-text text-transparent">dream job?</span>
+                <span className="bg-gradient-to-r from-blue-400 via-cyan-400 to-purple-400 bg-clip-text text-transparent">Resume Screening</span>
               </h2>
               <p className="text-gray-300 text-2xl font-light max-w-2xl mx-auto">
-                Start analyzing your resume against job descriptions today — <span className="text-cyan-400 font-semibold">completely free.</span>
+                Get your AI match score now. <span className="text-cyan-400 font-semibold">See exactly what's holding you back</span> and fix it in minutes.
               </p>
             </div>
             
@@ -302,17 +260,89 @@ export default function HomePage() {
               onClick={handleStartAnalysis}
               className="group inline-flex items-center gap-4 px-12 py-7 bg-gradient-to-r from-blue-600 via-cyan-600 to-blue-600 hover:from-blue-500 hover:via-cyan-500 hover:to-blue-500 rounded-2xl font-bold text-2xl transition-all duration-300 shadow-2xl shadow-blue-600/50 hover:shadow-cyan-600/60 hover:scale-110 transform hover:-translate-y-1"
             >
-              <span className="text-4xl group-hover:rotate-12 transition-transform duration-300">🚀</span>
-              Start Free Analysis
+              <span className="text-4xl group-hover:rotate-12 transition-transform duration-300">📊</span>
+              Analyze My Resume Free
               <span className="group-hover:translate-x-2 transition-transform duration-300">→</span>
             </button>
 
             <p className="text-gray-500 text-sm pt-4">
-              No credit card required • Analysis in under 2 seconds • Your data is secure
+              Results in &lt;2 seconds • 100% Secure • Always Free Analysis
             </p>
           </div>
         </section>
 
+        {/* ================================
+            FOOTER
+            ================================ */}
+        <footer className="bg-gradient-to-b from-black to-blue-950/20 border-t border-white/10 py-16 px-4">
+          <div className="max-w-6xl mx-auto">
+            {/* Footer Content Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+              {/* Brand */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-3xl">🚀</span>
+                  <div>
+                    <h3 className="text-white font-bold text-lg">ResuWise</h3>
+                    <p className="text-cyan-400 text-sm">Resume Intelligence</p>
+                  </div>
+                </div>
+                <p className="text-gray-400 text-sm leading-relaxed">
+                  AI-powered resume analysis to help you land your dream job.
+                </p>
+              </div>
+
+              {/* Product */}
+              <div>
+                <h4 className="text-white font-bold mb-4">Product</h4>
+                <ul className="space-y-2 text-sm text-gray-400">
+                  <li><a href="#" className="hover:text-cyan-400 transition-colors">Resume Analysis</a></li>
+                  <li><a href="#" className="hover:text-cyan-400 transition-colors">Resume Builder</a></li>
+                  <li><a href="#" className="hover:text-cyan-400 transition-colors">Interview Quiz</a></li>
+                  <li><a href="#" className="hover:text-cyan-400 transition-colors">Pricing</a></li>
+                </ul>
+              </div>
+
+              {/* Company */}
+              <div>
+                <h4 className="text-white font-bold mb-4">Company</h4>
+                <ul className="space-y-2 text-sm text-gray-400">
+                  <li><a href="#" className="hover:text-cyan-400 transition-colors">About Us</a></li>
+                  <li><a href="#" className="hover:text-cyan-400 transition-colors">Blog</a></li>
+                  <li><a href="#" className="hover:text-cyan-400 transition-colors">Contact</a></li>
+                  <li><a href="#" className="hover:text-cyan-400 transition-colors">Careers</a></li>
+                </ul>
+              </div>
+
+              {/* Legal */}
+              <div>
+                <h4 className="text-white font-bold mb-4">Legal</h4>
+                <ul className="space-y-2 text-sm text-gray-400">
+                  <li><a href="#" className="hover:text-cyan-400 transition-colors">Privacy Policy</a></li>
+                  <li><a href="#" className="hover:text-cyan-400 transition-colors">Terms of Service</a></li>
+                  <li><a href="#" className="hover:text-cyan-400 transition-colors">Cookie Policy</a></li>
+                  <li><a href="#" className="hover:text-cyan-400 transition-colors">Security</a></li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div className="border-t border-white/10 py-8"></div>
+
+            {/* Bottom Footer */}
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+              <p className="text-gray-500 text-sm">
+                &copy; 2026 ResuWise. All rights reserved.
+              </p>
+              <div className="flex items-center gap-6">
+                <a href="#" className="text-gray-400 hover:text-cyan-400 transition-colors text-lg">𝕏</a>
+                <a href="#" className="text-gray-400 hover:text-cyan-400 transition-colors text-lg">📘</a>
+                <a href="#" className="text-gray-400 hover:text-cyan-400 transition-colors text-lg">🔗</a>
+                <a href="#" className="text-gray-400 hover:text-cyan-400 transition-colors text-lg">💼</a>
+              </div>
+            </div>
+          </div>
+        </footer>
       </div>
 
       {/* CSS for custom animations */}
