@@ -1,9 +1,11 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import AnalysisPage from '../components/AnalysisPage';
 import AnalysisHistory from '../components/AnalysisHistory';
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState('home');
   const [showHistory, setShowHistory] = useState(false);
   const [currentAnalysisId, setCurrentAnalysisId] = useState(null);
@@ -11,6 +13,7 @@ export default function Dashboard() {
 
   const handleStartAnalysis  = () => setCurrentPage('analysis');
   const handleBackHome = () => { setCurrentPage('home'); setShowHistory(false); };
+  const handleBackToLanding = () => navigate('/');
   const handleSelectAnalysis = (analysisData) => {
     sessionStorage.setItem('restoredAnalysis', JSON.stringify(analysisData));
     setCurrentPage('analysis');
@@ -109,9 +112,9 @@ export default function Dashboard() {
                   </p>
                 </div>
                 <button 
-                  onClick={handleBackHome}
+                  onClick={handleBackToLanding}
                   className="mt-2 flex items-center gap-2 text-gray-400 hover:text-white text-lg font-light transition-colors duration-300 hover:scale-110 cursor-pointer"
-                  title="Back to Home"
+                  title="Back to Landing Page"
                 >
                   <span className="text-3xl">←</span>
                   <span>Back to Home</span>
