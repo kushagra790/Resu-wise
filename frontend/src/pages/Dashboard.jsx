@@ -61,21 +61,9 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                {/* History Card */}
-                <div 
-                  onClick={() => setShowHistory(!showHistory)}
-                  className="group relative bg-gradient-to-br from-purple-600/20 to-purple-900/10 border border-purple-600/40 rounded-2xl p-8 hover:border-purple-500/60 cursor-pointer transition-all duration-300 hover:shadow-2xl hover:shadow-purple-600/20 hover:-translate-y-1"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="relative z-10">
-                    <div className="text-6xl mb-4 group-hover:scale-110 transition-transform duration-300">📋</div>
-                    <h2 className="text-3xl font-bold text-white mb-3">Analysis History</h2>
-                    <p className="text-gray-400 mb-6 text-lg">Access all your previous analyses, compare results, and track your progress</p>
-                    <div className="flex items-center gap-2 text-purple-400 font-semibold group-hover:gap-3 transition-all">
-                      <span>{showHistory ? 'Hide' : 'Show'} History</span>
-                      <span className="text-xl group-hover:translate-x-1 transition-transform">→</span>
-                    </div>
-                  </div>
+                {/* Decorative Emoji Section */}
+                <div className="flex items-center justify-center">
+                  <div className="text-9xl animate-bounce">📄</div>
                 </div>
               </div>
 
