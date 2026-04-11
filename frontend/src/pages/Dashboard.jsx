@@ -80,13 +80,13 @@ export default function Dashboard() {
                   </div>
                   <div className="space-y-3">
                     <div className="flex items-center gap-2 text-green-400 text-sm">
-                      <span className="text-lg">✓</span> End-to-end encryption
+                      <span className="text-lg">✓</span> Your data stays private (we don't sell it)
                     </div>
                     <div className="flex items-center gap-2 text-green-400 text-sm">
-                      <span className="text-lg">✓</span> ISO 27001 Compliant
+                      <span className="text-lg">✓</span> Encrypted in transit and at rest
                     </div>
                     <div className="flex items-center gap-2 text-green-400 text-sm">
-                      <span className="text-lg">✓</span> Regular security audits
+                      <span className="text-lg">✓</span> Your resume is yours only
                     </div>
                   </div>
                 </div>
@@ -97,18 +97,18 @@ export default function Dashboard() {
                     <div className="text-4xl">✨</div>
                     <div>
                       <h3 className="text-2xl font-bold text-white mb-2">Powerful Features</h3>
-                      <p className="text-gray-400 text-sm">Everything you need to succeed</p>
+                      <p className="text-gray-400 text-sm">Real tools for real results</p>
                     </div>
                   </div>
                   <div className="space-y-3">
                     <div className="flex items-center gap-2 text-blue-400 text-sm">
-                      <span className="text-lg">⚡</span> Smart ATS Optimization for better visibility
+                      <span className="text-lg">⚡</span> Real resume scoring against job postings
                     </div>
                     <div className="flex items-center gap-2 text-blue-400 text-sm">
-                      <span className="text-lg">⚡</span> Identify & highlight skills that matter
+                      <span className="text-lg">⚡</span> See exactly which skills are missing
                     </div>
                     <div className="flex items-center gap-2 text-blue-400 text-sm">
-                      <span className="text-lg">⚡</span> Export tailored resume recommendations
+                      <span className="text-lg">⚡</span> Get personalized improvement tips
                     </div>
                   </div>
                 </div>
