@@ -110,10 +110,10 @@ export default function Dashboard() {
                 </div>
                 <button 
                   onClick={handleBackHome}
-                  className="mt-2 p-3 rounded-lg bg-gradient-to-br from-blue-600/20 to-blue-900/10 border border-blue-600/40 hover:border-blue-500/60 text-white hover:shadow-lg hover:shadow-blue-600/20 transition-all duration-300 hover:scale-110"
+                  className="mt-2 text-gray-400 hover:text-white text-3xl font-light transition-colors duration-300 hover:scale-110"
                   title="Back to Home"
                 >
-                  <span className="text-2xl">↩️</span>
+                  ←
                 </button>
               </div>
 
