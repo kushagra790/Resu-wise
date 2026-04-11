@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import AnalysisPage from '../components/AnalysisPage';
 import AnalysisHistory from '../components/AnalysisHistory';
@@ -9,7 +8,6 @@ export default function Dashboard() {
   const [showHistory, setShowHistory] = useState(false);
   const [currentAnalysisId, setCurrentAnalysisId] = useState(null);
   const { user } = useAuth();
-  const navigate = useNavigate();
 
   const handleStartAnalysis  = () => setCurrentPage('analysis');
   const handleBackHome = () => { setCurrentPage('home'); setShowHistory(false); };
@@ -33,7 +31,7 @@ export default function Dashboard() {
             <div className="max-w-6xl mx-auto">
 
               {/* Welcome Section */}
-              <div className="mb-16 flex justify-between items-start">
+              <div className="mb-16">
                 <div>
                   <h1 className="text-5xl md:text-6xl font-black text-white mb-4">
                     Welcome, <span className="text-blue-500">{user?.name || 'User'}</span> 👋
@@ -42,12 +40,6 @@ export default function Dashboard() {
                     Let's analyze your resume and land that perfect job
                   </p>
                 </div>
-                <button
-                  onClick={() => navigate('/')}
-                  className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-blue-400 hover:bg-blue-600/10 border border-transparent hover:border-blue-600/30 transition-all duration-200"
-                >
-                  ← Back to Home
-                </button>
               </div>
 
               {/* Main Action Cards */}

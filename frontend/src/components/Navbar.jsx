@@ -1,14 +1,19 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export default function Navbar() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, isAuthenticated, logout } = useAuth();
 
   const handleLogout = () => {
     logout();
     navigate('/');
   };
+
+  // Determine which redirect button to show
+  const isDashboard = location.pathname === '/dashboard';
+  const isHome = location.pathname === '/';
 
   return (
     <nav className="bg-black/95 text-white sticky top-0 z-40 border-b border-blue-600/20 backdrop-blur-xl">
@@ -44,13 +49,24 @@ export default function Navbar() {
                 >
                   <span className="text-base">⚙️</span>
                 </button>
-                <button
-                  onClick={() => navigate('/')}
-                  className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 border border-transparent hover:border-blue-600/30 transition-all duration-200"
-                >
-                  <span className="text-base">🏠</span>
-                  Home
-                </button>
+                {!isDashboard && (
+                  <button
+                    onClick={() => navigate('/dashboard')}
+                    className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 border border-transparent hover:border-blue-600/30 transition-all duration-200"
+                  >
+                    <span className="text-base">📊</span>
+                    Dashboard
+                  </button>
+                )}
+                {isDashboard && (
+                  <button
+                    onClick={() => navigate('/')}
+                    className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 border border-transparent hover:border-blue-600/30 transition-all duration-200"
+                  >
+                    <span className="text-base">🏠</span>
+                    Home
+                  </button>
+                )}
                 <button
                   onClick={handleLogout}
                   className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-red-400 hover:bg-red-500/5 border border-transparent hover:border-red-500/30 transition-all duration-200"
