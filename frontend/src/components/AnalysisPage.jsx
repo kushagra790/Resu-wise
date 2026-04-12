@@ -99,10 +99,11 @@ export default function AnalysisPage({ onBack }) {
         formData.append('resume', resumeFile);
         formData.append('jobDescription', jobDescFile);
 
+        // Note: Don't set Content-Type header manually - axios handles it automatically
+        // Setting it manually prevents axios from adding the boundary parameter
         const response = await axios.post(
           'http://localhost:5000/api/analyze/upload',
-          formData,
-          { headers: { 'Content-Type': 'multipart/form-data' } }
+          formData
         );
 
         if (response.data.success) {
@@ -112,6 +113,7 @@ export default function AnalysisPage({ onBack }) {
           setError(response.data.error || 'Analysis failed');
         }
       } catch (err) {
+        console.error('File upload error:', err);
         setError(err.response?.data?.message || err.message || 'Failed to process files.');
       } finally {
         setLoading(false);

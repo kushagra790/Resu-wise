@@ -88,50 +88,88 @@ router.post(
   ]),
   async (req, res) => {
     try {
-      // Validate files exist
-      if (!req.files || !req.files.resume || !req.files.jobDescription) {
+      // Validate files exist — more robust checking
+      if (!req.files) {
+        console.error('No files in request');
         return res.status(400).json({
+          success: false,
           error: 'Missing required files',
-          message: 'Both resume and jobDescription files are required'
+          message: 'No files received in request'
+        });
+      }
+
+      if (!req.files.resume || req.files.resume.length === 0) {
+        console.error('Resume file missing');
+        return res.status(400).json({
+          success: false,
+          error: 'Missing required file',
+          message: 'Resume file is required'
+        });
+      }
+
+      if (!req.files.jobDescription || req.files.jobDescription.length === 0) {
+        console.error('Job description file missing');
+        return res.status(400).json({
+          success: false,
+          error: 'Missing required file',
+          message: 'Job description file is required'
         });
       }
 
       const resumeFile = req.files.resume[0];
       const jobDescriptionFile = req.files.jobDescription[0];
 
+      console.log(`Processing files: ${resumeFile.originalname} and ${jobDescriptionFile.originalname}`);
+
       // Perform analysis
       const result = await analyzeUploadedFiles(resumeFile, jobDescriptionFile);
 
       res.json(result);
     } catch (error) {
-      console.error('File Upload API Error:', error);
+      console.error('File Upload API Error:', error.message);
       res.status(400).json({
         success: false,
-        error: error.message
+        error: 'File analysis failed',
+        message: error.message
       });
     }
   }
 );
 
 /**
- * Error handler for multer
+ * Error handler for multer and other errors
  */
 router.use((error, req, res, next) => {
   if (error instanceof multer.MulterError) {
+    console.error('Multer Error:', error.code, error.message);
+    
     if (error.code === 'FILE_TOO_LARGE') {
       return res.status(400).json({
+        success: false,
         error: 'File too large',
         message: 'File size exceeds 10MB limit'
       });
     }
+    
+    if (error.code === 'LIMIT_FILE_COUNT') {
+      return res.status(400).json({
+        success: false,
+        error: 'Too many files',
+        message: 'Upload only one resume and one job description file'
+      });
+    }
+    
     return res.status(400).json({
+      success: false,
       error: 'File upload error',
       message: error.message
     });
   }
 
   if (error) {
+    console.error('Upload Error:', error.message);
     return res.status(400).json({
+      success: false,
       error: 'File processing error',
       message: error.message
     });
