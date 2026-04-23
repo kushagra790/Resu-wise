@@ -570,6 +570,7 @@ ResuWise/
 │   ├── scripts/
 │   │   ├── seedDatabase.js
 │   │   ├── seedQuiz.js
+│   │   ├── seedQuizFull.js
 │   │   └── addMoreQuestions.js
 │   ├── config/database.js
 │   ├── .env.example

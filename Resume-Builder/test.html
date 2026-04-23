@@ -334,6 +334,9 @@ const scoreElement = document.getElementById('score');
 const timerDisplay = document.getElementById('timer');
 const restartButton = document.getElementById('restart-btn');
 const categorySelect = document.getElementById('category-select');
+const categoryDisplayMap = {
+    CODE: 'Programming'
+};
 
 let questions = [];
 let currentQuestionIndex = 0;
@@ -362,19 +365,31 @@ restartButton.addEventListener('click', () => {
 });
 
 async function fetchQuestions() {
-    const selectedCategory = categorySelect.value;
-    console.log("Fetching questions for category:", selectedCategory);
+    const selectedCategory = categorySelect.value || 'CODE';
+    const categoryLabel = categoryDisplayMap[selectedCategory] || categorySelect.options[categorySelect.selectedIndex]?.text || selectedCategory;
+    console.log("Fetching questions for category:", selectedCategory, "(", categoryLabel, ")");
     
     // Use backend API - the category must be converted to uppercase for the database
     const url = `http://localhost:5000/api/quiz/questions?category=${selectedCategory.toUpperCase()}&limit=5`;
 
     try {
         const response = await fetch(url);
-        if (!response.ok) throw new Error("Failed to fetch questions.");
+        if (!response.ok) {
+            let errorText = `HTTP ${response.status}`;
+            const errorJson = await response.json().catch(() => null);
+            if (errorJson && (errorJson.message || errorJson.error)) {
+                errorText = errorJson.message || errorJson.error;
+                if (errorJson.categories && Array.isArray(errorJson.categories) && errorJson.categories.length) {
+                    errorText += ` Available categories: ${errorJson.categories.join(', ')}`;
+                }
+            }
+            throw new Error(errorText);
+        }
+
         const data = await response.json();
 
         if (!data || data.length === 0) {
-            alert("No questions found for " + selectedCategory + ". Please try a different category.");
+            alert("No questions found for " + selectedCategory + ". Please try a different category or seed the quiz database.");
             return;
         }
 
@@ -387,7 +402,11 @@ async function fetchQuestions() {
         showQuestion();
     } catch (error) {
         console.error("Error fetching questions:", error);
-        alert("Failed to load quiz questions. Please check your internet connection and try again.");
+        if (error.name === 'TypeError') {
+            alert("Could not connect to the quiz backend at http://localhost:5000. Please start the backend server and try again.");
+        } else {
+            alert("Failed to load quiz questions: " + error.message);
+        }
     }
 }
 
@@ -473,12 +492,31 @@ function showScore() {
 }
 
 
+function getLoggedInUser() {
+    const storedAuthUser = localStorage.getItem('authUser');
+    if (storedAuthUser) {
+        try {
+            return JSON.parse(storedAuthUser);
+        } catch (error) {
+            console.warn('Failed to parse authUser from localStorage', error);
+        }
+    }
+    return null;
+}
+
+function getUserIdentity() {
+    const authUser = getLoggedInUser();
+    const email = sessionStorage.getItem('email') || authUser?.email || '';
+    const fullname = sessionStorage.getItem('fullname') || authUser?.name || authUser?.fullname || '';
+    return { email, fullname };
+}
+
 // Save the highest score for each skill in Firestore
 async function saveScore(skill, newScore) {
-    let email = sessionStorage.getItem('email');
-    const fullname = sessionStorage.getItem('fullname');
+    const authUser = getLoggedInUser();
+    let { email, fullname } = getUserIdentity();
 
-    // If email is not in session, prompt user for email
+    // If email is not available from session or auth state, prompt the user once.
     if (!email) {
         email = prompt("Please enter your email to save your quiz score:");
         if (!email) {
@@ -486,6 +524,10 @@ async function saveScore(skill, newScore) {
             return;
         }
         sessionStorage.setItem('email', email);
+    }
+
+    if (!sessionStorage.getItem('fullname') && fullname) {
+        sessionStorage.setItem('fullname', fullname);
     }
 
     const userDocRef = doc(db, "users", email);

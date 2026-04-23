@@ -29,7 +29,12 @@
             border: 1px solid #374151;
             margin: 10px;
             border-radius: 12px;
+            height: calc(100vh - 20px);
+            max-height: calc(100vh - 20px);
             overflow-y: auto;
+            position: sticky;
+            top: 10px;
+            align-self: flex-start;
             backdrop-filter: blur(10px);
         }
 
@@ -175,19 +180,20 @@
             margin: 10px;
             border-radius: 12px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            color: #000;
         }
 
         .header {
             text-align: left;
             margin-bottom: 15px;
             padding-bottom: 15px;
-            border-bottom: 2px solid #333;
+            border-bottom: 2px solid #000;
         }
 
         .header h1 {
             font-size: 32px;
             margin: 0 0 10px 0;
-            color: #333;
+            color: #000;
             font-weight: 700;
         }
 
@@ -197,10 +203,11 @@
             font-size: 13px;
             flex-wrap: wrap;
             align-items: center;
+            color: #000;
         }
 
         .header-contact a {
-            color: #0066cc;
+            color: #000;
             text-decoration: none;
         }
 
@@ -209,7 +216,7 @@
         }
 
         .divider {
-            color: #999;
+            color: #000;
             margin: 0 5px;
         }
 
@@ -348,7 +355,7 @@
             <label for="name">Name:</label>
             <input type="text" id="name" placeholder="Enter your name" oninput="updatePreview()">
             <label for="location">Location:</label>
-            <input type="location" id="location" placeholder="Enter your location" oninput="updatePreview()">
+            <input type="text" id="location" placeholder="Enter your location" oninput="updatePreview()">
             <label for="contact">Contact Number:</label>
             <input type="text" id="contact" placeholder="Enter contact number" maxlength="10" pattern="[0-9]{10}" oninput="updatePreview()">
             <label for="email">Email ID:</label>
@@ -406,6 +413,8 @@
             <div class="header-contact">
                 <a href="mailto:" id="preview-email-link">email@example.com</a>
                 <span class="divider">|</span>
+                <span id="preview-location">Your Location</span>
+                <span class="divider">|</span>
                 <span id="preview-contact">+1 234 567 8900</span>
                 <span class="divider">|</span>
                 <a href="#" id="preview-github-link" target="_blank">GitHub</a>
@@ -453,25 +462,33 @@
             section.style.display = section.style.display === 'block' ? 'none' : 'block';
         }
 
+        function normalizeUrl(url) {
+            if (!url) return '';
+            const trimmed = url.trim();
+            if (/^(https?:\/\/|mailto:|tel:)/i.test(trimmed)) return trimmed;
+            return `https://${trimmed}`;
+        }
+
         // Update preview
         function updatePreview() {
             document.getElementById("preview-name").innerText = document.getElementById("name").value || "Your Name";
+            document.getElementById("preview-location").innerText = document.getElementById("location").value || "Your Location";
             document.getElementById("preview-contact").innerText = document.getElementById("contact").value || "+1 234 567 8900";
             
-            const email = document.getElementById("email").value;
+            const email = document.getElementById("email").value.trim();
             const emailLink = document.getElementById("preview-email-link");
             emailLink.innerText = email || "email@example.com";
-            emailLink.href = `mailto:${email}`;
+            emailLink.href = email ? `mailto:${email}` : "mailto:";
             
-            const github = document.getElementById("github").value;
-            if (github) {
-                document.getElementById("preview-github-link").href = github;
-            }
+            const github = document.getElementById("github").value.trim();
+            const githubLink = document.getElementById("preview-github-link");
+            githubLink.href = github ? normalizeUrl(github) : "#";
+            githubLink.target = github ? "_blank" : "_self";
             
-            const linkedin = document.getElementById("linkedin").value;
-            if (linkedin) {
-                document.getElementById("preview-linkedin-link").href = linkedin;
-            }
+            const linkedin = document.getElementById("linkedin").value.trim();
+            const linkedinLink = document.getElementById("preview-linkedin-link");
+            linkedinLink.href = linkedin ? normalizeUrl(linkedin) : "#";
+            linkedinLink.target = linkedin ? "_blank" : "_self";
             
             const inputText = document.getElementById("achievement-info").value.trim();
             if (inputText) {
@@ -496,23 +513,110 @@
             updateEducationPreview();
             updateExperiencePreview();
             updateProjectPreview();
+            saveResumeState();
         }
 
+        function getResumeStorageKey() {
+            const storedAuthUser = localStorage.getItem('authUser');
+            if (storedAuthUser) {
+                try {
+                    const user = JSON.parse(storedAuthUser);
+                    if (user.email) {
+                        return `resuwise_resume_${user.email}`;
+                    }
+                } catch (error) {
+                    console.warn('Failed to parse authUser from localStorage', error);
+                }
+            }
+            return 'resuwise_resume_guest';
+        }
+
+        function saveResumeState() {
+            const state = {
+                personal: {
+                    name: document.getElementById('name').value,
+                    location: document.getElementById('location').value,
+                    contact: document.getElementById('contact').value,
+                    email: document.getElementById('email').value,
+                    github: document.getElementById('github').value,
+                    linkedin: document.getElementById('linkedin').value
+                },
+                achievement: document.getElementById('achievement-info').value,
+                activities: document.getElementById('activities-info').value,
+                education: Array.from(document.querySelectorAll('#education-fields .content-group')).map(field => ({
+                    degree: field.querySelector('input[data-type="degree"]').value,
+                    school: field.querySelector('input[data-type="school"]').value,
+                    cgpa: field.querySelector('input[data-type="cgpa"]').value,
+                    month: field.querySelector('input[data-type="month"]').value,
+                    year: field.querySelector('input[data-type="year"]').value
+                })),
+                experience: Array.from(document.querySelectorAll('#experience-fields .content-group')).map(field => ({
+                    company: field.querySelector('input[data-type="company"]').value,
+                    location: field.querySelector('input[data-type="location"]').value,
+                    title: field.querySelector('input[data-type="title"]').value,
+                    fromMonth: field.querySelector('input[data-type="from-month"]').value,
+                    fromYear: field.querySelector('input[data-type="from-year"]').value,
+                    toMonth: field.querySelector('input[data-type="to-month"]').value,
+                    toYear: field.querySelector('input[data-type="to-year"]').value,
+                    description: field.querySelector('textarea[data-type="description"]').value
+                })),
+                projects: Array.from(document.querySelectorAll('#project-fields .content-group')).map(field => ({
+                    project: field.querySelector('input[data-type="project"]').value,
+                    fromMonth: field.querySelector('input[data-type="from-month"]').value,
+                    fromYear: field.querySelector('input[data-type="from-year"]').value,
+                    toMonth: field.querySelector('input[data-type="to-month"]').value,
+                    toYear: field.querySelector('input[data-type="to-year"]').value,
+                    description: field.querySelector('textarea[data-type="description"]').value
+                }))
+            };
+            localStorage.setItem(getResumeStorageKey(), JSON.stringify(state));
+        }
+
+        function restoreResumeState() {
+            const saved = localStorage.getItem(getResumeStorageKey());
+            if (!saved) return;
+            try {
+                const state = JSON.parse(saved);
+                document.getElementById('name').value = state.personal?.name || '';
+                document.getElementById('location').value = state.personal?.location || '';
+                document.getElementById('contact').value = state.personal?.contact || '';
+                document.getElementById('email').value = state.personal?.email || '';
+                document.getElementById('github').value = state.personal?.github || '';
+                document.getElementById('linkedin').value = state.personal?.linkedin || '';
+                document.getElementById('achievement-info').value = state.achievement || '';
+                document.getElementById('activities-info').value = state.activities || '';
+
+                document.getElementById('education-fields').innerHTML = '';
+                (state.education || []).forEach(item => addEducation(item));
+                document.getElementById('experience-fields').innerHTML = '';
+                (state.experience || []).forEach(item => addExperience(item));
+                document.getElementById('project-fields').innerHTML = '';
+                (state.projects || []).forEach(item => addProject(item));
+
+                updatePreview();
+            } catch (error) {
+                console.warn('Failed to restore resume state', error);
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', restoreResumeState);
+
         // Add and remove education fields
-        function addEducation() {
+        function addEducation(data = {}) {
             const id = Date.now();
             const educationField = document.createElement("div");
             educationField.classList.add("content-group");
             educationField.setAttribute("id", `education-${id}`);
             educationField.innerHTML = `
-                <input type="text" placeholder="Degree" oninput="updatePreview()" data-type="degree">
-                <input type="text" placeholder="School Name" oninput="updatePreview()" data-type="school">
-                <input type="text" placeholder="CGPA/Percentage" oninput="updatePreview()" data-type="cgpa">
-                <input type="text" placeholder="Month of Completion" oninput="updatePreview()" data-type="month">
-                <input type="text" placeholder="Year of Completion" oninput="updatePreview()" data-type="year">
+                <input type="text" placeholder="Degree" oninput="updatePreview()" data-type="degree" value="${data.degree || ''}">
+                <input type="text" placeholder="School Name" oninput="updatePreview()" data-type="school" value="${data.school || ''}">
+                <input type="text" placeholder="CGPA/Percentage" oninput="updatePreview()" data-type="cgpa" value="${data.cgpa || ''}">
+                <input type="text" placeholder="Month of Completion" oninput="updatePreview()" data-type="month" value="${data.month || ''}">
+                <input type="text" placeholder="Year of Completion" oninput="updatePreview()" data-type="year" value="${data.year || ''}">
                 <button class="delete-button" onclick="removeField('education-${id}')">Delete</button>
             `;
             document.getElementById("education-fields").appendChild(educationField);
+            saveResumeState();
         }
 
         function updateEducationPreview() {
@@ -536,23 +640,24 @@
         }
 
         // Add and remove experience fields
-        function addExperience() {
+        function addExperience(data = {}) {
             const id = Date.now();
             const experienceField = document.createElement("div");
             experienceField.classList.add("content-group");
             experienceField.setAttribute("id", `experience-${id}`);
             experienceField.innerHTML = `
-                <input type="text" placeholder="Company Name" oninput="updatePreview()" data-type="company">
-                <input type="text" placeholder="Location" oninput="updatePreview()" data-type="location">
-                <input type="text" placeholder="Job Title" oninput="updatePreview()" data-type="title">
-                <input type="text" placeholder="From Month" oninput="updatePreview()" data-type="from-month">
-                <input type="text" placeholder="From Year" oninput="updatePreview()" data-type="from-year">
-                <input type="text" placeholder="To Month" oninput="updatePreview()" data-type="to-month">
-                <input type="text" placeholder="To Year" oninput="updatePreview()" data-type="to-year">
-                <textarea placeholder="Description" oninput="updatePreview()" data-type="description"></textarea>
+                <input type="text" placeholder="Company Name" oninput="updatePreview()" data-type="company" value="${data.company || ''}">
+                <input type="text" placeholder="Location" oninput="updatePreview()" data-type="location" value="${data.location || ''}">
+                <input type="text" placeholder="Job Title" oninput="updatePreview()" data-type="title" value="${data.title || ''}">
+                <input type="text" placeholder="From Month" oninput="updatePreview()" data-type="from-month" value="${data.fromMonth || ''}">
+                <input type="text" placeholder="From Year" oninput="updatePreview()" data-type="from-year" value="${data.fromYear || ''}">
+                <input type="text" placeholder="To Month" oninput="updatePreview()" data-type="to-month" value="${data.toMonth || ''}">
+                <input type="text" placeholder="To Year" oninput="updatePreview()" data-type="to-year" value="${data.toYear || ''}">
+                <textarea placeholder="Description" oninput="updatePreview()" data-type="description">${data.description || ''}</textarea>
                 <button class="delete-button" onclick="removeField('experience-${id}')">Delete</button>
             `;
             document.getElementById("experience-fields").appendChild(experienceField);
+            saveResumeState();
         }
 
         function updateExperiencePreview() {
@@ -582,21 +687,22 @@
         }
 
         // Projects Add/Delete
-        function addProject() {
+        function addProject(data = {}) {
             const id = Date.now();
             const projectField = document.createElement("div");
             projectField.classList.add("content-group");
             projectField.setAttribute("id", `project-${id}`);
             projectField.innerHTML = `
-                <input type="text" placeholder="Project Name" oninput="updatePreview()" data-type="project">
-                <input type="text" placeholder="From Month" oninput="updatePreview()" data-type="from-month">
-                <input type="text" placeholder="From Year" oninput="updatePreview()" data-type="from-year">
-                <input type="text" placeholder="To Month" oninput="updatePreview()" data-type="to-month">
-                <input type="text" placeholder="To Year" oninput="updatePreview()" data-type="to-year">
-                <textarea placeholder="Description" oninput="updatePreview()" data-type="description"></textarea>
+                <input type="text" placeholder="Project Name" oninput="updatePreview()" data-type="project" value="${data.project || ''}">
+                <input type="text" placeholder="From Month" oninput="updatePreview()" data-type="from-month" value="${data.fromMonth || ''}">
+                <input type="text" placeholder="From Year" oninput="updatePreview()" data-type="from-year" value="${data.fromYear || ''}">
+                <input type="text" placeholder="To Month" oninput="updatePreview()" data-type="to-month" value="${data.toMonth || ''}">
+                <input type="text" placeholder="To Year" oninput="updatePreview()" data-type="to-year" value="${data.toYear || ''}">
+                <textarea placeholder="Description" oninput="updatePreview()" data-type="description">${data.description || ''}</textarea>
                 <button class="delete-button" onclick="removeField('project-${id}')">Delete</button>
             `;
             document.getElementById("project-fields").appendChild(projectField);
+            saveResumeState();
         }
 
         function updateProjectPreview() {
@@ -624,8 +730,10 @@
 
         // Remove dynamic fields
         function removeField(id) {
-            document.getElementById(id).remove();
+            const field = document.getElementById(id);
+            if (field) field.remove();
             updatePreview();
+            saveResumeState();
         }
 
         document.getElementById('download-pdf').addEventListener('click', function() {
@@ -668,9 +776,29 @@
     const email = sessionStorage.getItem('email');
     const scores = sessionStorage.getItem('scores');
 
+    function getLoggedInUser() {
+        const storedAuthUser = localStorage.getItem('authUser');
+        if (storedAuthUser) {
+            try {
+                return JSON.parse(storedAuthUser);
+            } catch (error) {
+                console.warn('Failed to parse authUser from localStorage', error);
+            }
+        }
+        return null;
+    }
+
+    function getUserIdentity() {
+        const authUser = getLoggedInUser();
+        return {
+            email: sessionStorage.getItem('email') || authUser?.email || '',
+            fullname: sessionStorage.getItem('fullname') || authUser?.name || authUser?.fullname || ''
+        };
+    }
+
     // Fetch scores from Firebase and display the keys in preview-skills div
     async function fetchScores() {
-    const email = sessionStorage.getItem('email');
+    const { email } = getUserIdentity();
     console.log("Attempting to fetch scores. Email:", email);
     
     if (!email) {
@@ -708,7 +836,8 @@
                 skillsDiv.classList.add('skills-list');
 
                 // Show ALL skills (lowered threshold or removed it), display with scores
-                const skillsList = keys.map(key => `${key} (${scores[key]}/5)`).join(', ');
+                const categoryDisplayMap = { CODE: 'Programming' };
+                const skillsList = keys.map(key => `${categoryDisplayMap[key] || key} (${scores[key]}/5)`).join(', ');
                 skillsDiv.innerHTML = skillsList;
                 console.log("Adding skills to resume:", skillsList);
 

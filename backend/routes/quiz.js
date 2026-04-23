@@ -22,9 +22,17 @@ router.get('/questions', async (req, res) => {
       .select('-__v -updatedAt -createdAt');
     
     if (!allQuestions || allQuestions.length === 0) {
+      const availableCategories = await Question.distinct('category');
+      const categoryList = availableCategories.length > 0
+        ? availableCategories.sort().join(', ')
+        : 'No categories are currently seeded.';
+
       return res.status(404).json({ 
         error: 'No questions found for this category',
-        message: `Try one of these categories: SQL, CODE, REACT, POSTGRES, DJANGO, NODEJS, NEXT.JS, VUEJS, WORDPRESS, LINUX, BASH, DOCKER, DEVOPS`
+        message: availableCategories.length > 0
+          ? `Try one of these seeded categories: ${categoryList}`
+          : 'No quiz questions are currently seeded. Run the quiz seed script to populate data.',
+        categories: availableCategories
       });
     }
     
