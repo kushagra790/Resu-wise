@@ -204,7 +204,7 @@ export default function Dashboard() {
                     { step: '4', title: 'Improve & Apply', desc: 'Get ready for success' },
                   ].map((item, i) => (
                     <div key={i} className="relative group hover:scale-110 transition-transform duration-300">
-                      {i < 3 && (
+                      {i < 4 && (
                         <div className="hidden md:block absolute top-8 left-[60%] w-[80px] h-0.5 bg-gradient-to-r from-blue-600/50 to-transparent group-hover:from-blue-500 transition-all duration-300"></div>
                       )}
                       <div className="text-center">

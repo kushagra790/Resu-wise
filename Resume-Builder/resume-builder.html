@@ -343,14 +343,14 @@
         <h2>Resume Details</h2>
 
         <!-- Personal Info Section -->
-        <div class="section-header" onclick="toggleSection('personal-info')"><img src="icons/user.png">&nbsp;&nbsp;&nbsp;Personal Info</div>
+        <div class="section-header" onclick="toggleSection('personal-info')"><img src="icons/user.svg">&nbsp;&nbsp;&nbsp;Personal Info</div>
         <div class="section-content" id="personal-info">
             <label for="name">Name:</label>
             <input type="text" id="name" placeholder="Enter your name" oninput="updatePreview()">
             <label for="location">Location:</label>
             <input type="location" id="location" placeholder="Enter your location" oninput="updatePreview()">
             <label for="contact">Contact Number:</label>
-            <input type="number" id="contact" placeholder="Enter contact number" oninput="updatePreview()">
+            <input type="text" id="contact" placeholder="Enter contact number" maxlength="10" pattern="[0-9]{10}" oninput="updatePreview()">
             <label for="email">Email ID:</label>
             <input type="email" id="email" placeholder="Enter email-id" oninput="updatePreview()">
             <label for="github">GitHub URL:</label>
@@ -360,21 +360,21 @@
         </div>
 
         <!-- Education Section with Add/Delete Functionality -->
-        <div class="section-header" onclick="toggleSection('education-section')"><img src="icons/open-book.png">&nbsp;&nbsp;&nbsp;Education</div>
+        <div class="section-header" onclick="toggleSection('education-section')"><img src="icons/open-book.svg">&nbsp;&nbsp;&nbsp;Education</div>
         <div class="section-content" id="education-section">
             <div id="education-fields"></div>
             <button class="add-button" onclick="addEducation()">Add Education</button>
         </div>
 
         <!-- Experience Section with Add/Delete Functionality -->
-        <div class="section-header" onclick="toggleSection('experience-section')"><img src="icons/portfolio.png">&nbsp;&nbsp;&nbsp;Experience</div>
+        <div class="section-header" onclick="toggleSection('experience-section')"><img src="icons/portfolio.svg">&nbsp;&nbsp;&nbsp;Experience</div>
         <div class="section-content" id="experience-section">
             <div id="experience-fields"></div>
             <button class="add-button" onclick="addExperience()">Add Experience</button>
         </div>
 
         <!-- Skills Section -->
-        <div class="section-header" onclick="toggleSection('skills-section')"><img src="icons/solution.png">&nbsp;&nbsp;&nbsp;Skills</div>
+        <div class="section-header" onclick="toggleSection('skills-section')"><img src="icons/solution.svg">&nbsp;&nbsp;&nbsp;Skills</div>
         <div class="section-content" id="skills-section">
             <!-- <textarea id="skills" placeholder="Enter your skills" oninput="updatePreview()"></textarea> -->
              <button id="addSkills">Add Skills</button>
@@ -382,17 +382,17 @@
         </div>
 
         <!-- Projects Section -->
-        <div class="section-header" onclick="toggleSection('project-section')"><img src="icons/layers.png">&nbsp;&nbsp;&nbsp;Projects</div>
+        <div class="section-header" onclick="toggleSection('project-section')"><img src="icons/layers.svg">&nbsp;&nbsp;&nbsp;Projects</div>
         <div class="section-content" id="project-section">
             <div id="project-fields"></div>
             <button class="add-button" onclick="addProject()">Add Project</button>
         </div>
 
-        <div class="section-header" onclick="toggleSection('achievement')"><img src="icons/medal.png">&nbsp;&nbsp;&nbsp;Professional Achievements</div>
+        <div class="section-header" onclick="toggleSection('achievement')"><img src="icons/medal.svg">&nbsp;&nbsp;&nbsp;Professional Achievements</div>
         <div class="section-content" id="achievement">
             <textarea placeholder="Achievements" oninput="updatePreview()" id="achievement-info"></textarea>
         </div>
-        <div class="section-header" onclick="toggleSection('activities')"><img src="icons/assignments.png">&nbsp;&nbsp;&nbsp;Co-Curricular Activities</div>
+        <div class="section-header" onclick="toggleSection('activities')"><img src="icons/assignments.svg">&nbsp;&nbsp;&nbsp;Co-Curricular Activities</div>
         <div class="section-content" id="activities">
             <textarea placeholder="Co-Curricular Activities" oninput="updatePreview()" id="activities-info"></textarea>
         </div>
