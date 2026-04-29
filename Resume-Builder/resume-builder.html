@@ -892,13 +892,13 @@
                 // Clear previous content
                 previewSkillsDiv.innerHTML = '';
                 
-                // Create a new div to hold the skills keys with scores
+                // Create a new div to hold the skills keys (without scores)
                 const skillsDiv = document.createElement('div');
                 skillsDiv.classList.add('skills-list');
 
-                // Show ALL skills (lowered threshold or removed it), display with scores
+                // Show ALL skills (lowered threshold or removed it), display WITHOUT scores
                 const categoryDisplayMap = { CODE: 'Programming' };
-                const skillsList = keys.map(key => `${formatSkillName(categoryDisplayMap[key] || key)} (${scores[key]}/5)`).join(', ');
+                const skillsList = keys.map(key => formatSkillName(categoryDisplayMap[key] || key)).join(', ');
                 skillsDiv.innerHTML = skillsList;
                 console.log("Adding skills to resume:", skillsList);
 
