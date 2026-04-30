@@ -27,7 +27,22 @@ function FloatingElement({ delay, children }) {
 export default function HomePage() {
   const navigate = useNavigate();
   const [isHovered, setIsHovered] = useState(null);
+  const [showScrollTop, setShowScrollTop] = useState(false);
   const handleStartAnalysis = () => navigate('/dashboard');
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.pageYOffset > 400);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-blue-950/20 to-black text-white overflow-hidden relative">
@@ -344,6 +359,16 @@ export default function HomePage() {
           </div>
         </footer>
       </div>
+
+      {showScrollTop && (
+        <button
+          onClick={scrollToTop}
+          className="fixed right-6 bottom-8 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-blue-600/90 text-white shadow-2xl shadow-blue-500/40 transition duration-300 hover:-translate-y-1 hover:bg-cyan-500/90"
+          aria-label="Scroll to top"
+        >
+          <span className="text-2xl leading-none">↑</span>
+        </button>
+      )}
 
       {/* CSS for custom animations */}
       <style>{`

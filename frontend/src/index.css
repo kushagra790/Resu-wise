@@ -34,6 +34,10 @@
 /* ========================
    BASE
    ======================== */
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -115,4 +119,4 @@ body {
 ::-webkit-scrollbar-track { background: #000; }
 ::-webkit-scrollbar-thumb { background: #2563eb; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #3b82f6; }
-
+
