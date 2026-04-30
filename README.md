@@ -146,7 +146,9 @@ VITE_API_BASE_URL=http://localhost:5000
 ## 👨‍💻 Author
 
 Ekta Agrawal  
-GitHub: https://github.com/EktaAgrawal08  
+GitHub: https://github.com/EktaAgrawal08
+kushagra singh
+srishti agarwal
 
 ---
 
