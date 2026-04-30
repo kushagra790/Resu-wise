@@ -264,10 +264,10 @@ async function runTests() {
       const duration = Date.now() - startTime;
 
       // Extract scores
-      const finalScore = Math.round(result.finalScore * 10) / 10;
-      const tfidfScore = Math.round(result.scores.tfidf * 10) / 10;
-      const atsScore = Math.round(result.scores.ats.overall * 10) / 10;
-      const semanticScore = Math.round(result.scores.semantic * 10) / 10;
+      const finalScore = result.scores.overallMatch;
+      const tfidfScore = result.scores.tfidf;
+      const atsScore = result.scores.ats;
+      const semanticScore = result.scores.semantic;
 
       // Validate scores
       const finalScoreValid = finalScore >= testCase.expectedScore.min && 
@@ -290,23 +290,27 @@ async function runTests() {
       console.log(`   Processing Time:   ${duration}ms ⏱️`);
 
       console.log(`\n📋 DETAILS:`);
-      console.log(`   Matched Skills:    ${result.skills.matched.length}/${result.skills.total}`);
-      console.log(`   Required Met:      ${result.skillLevels.required.matched}/${result.skillLevels.required.total}`);
-      console.log(`   Preferred Met:     ${result.skillLevels.preferred.matched}/${result.skillLevels.preferred.total}`);
-      console.log(`   Nice-to-Have Met:  ${result.skillLevels.niceToHave.matched}/${result.skillLevels.niceToHave.total}`);
+      const totalMatched = Object.values(result.matchedSkills).flat().length;
+      const totalMissing = Object.values(result.missingSkills).flat().length;
+      console.log(`   Matched Skills:    ${totalMatched}`);
+      console.log(`   Missing Skills:    ${totalMissing}`);
+      console.log(`   Required Met:      ${result.matchedSkillsByLevel.required.length}/${result.skillRequirements.required.length}`);
+      console.log(`   Preferred Met:     ${result.matchedSkillsByLevel.preferred.length}/${result.skillRequirements.preferred.length}`);
+      console.log(`   Nice-to-Have Met:  ${result.matchedSkillsByLevel.nicetoHave.length}/${result.skillRequirements.nicetoHave.length}`);
 
-      if (result.fuzzyMatches && result.fuzzyMatches.length > 0) {
-        console.log(`\n🔤 FUZZY MATCHES:`);
-        result.fuzzyMatches.forEach(match => {
-          console.log(`   "${match.typo}" → "${match.corrected}" (confidence: ${match.confidence})`);
+      if (result.strengths && result.strengths.length > 0) {
+        console.log(`\n💪 STRENGTHS:`);
+        result.strengths.slice(0, 3).forEach(strength => {
+          console.log(`   • ${strength.description}`);
         });
       }
 
-      console.log(`\n💪 STRENGTHS:`);
-      result.strengths.slice(0, 3).forEach(s => console.log(`   • ${s}`));
-
-      console.log(`\n🎯 SUGGESTIONS:`);
-      result.suggestions.slice(0, 3).forEach(s => console.log(`   • ${s}`));
+      if (result.suggestions && result.suggestions.length > 0) {
+        console.log(`\n🎯 SUGGESTIONS:`);
+        result.suggestions.slice(0, 3).forEach(suggestion => {
+          console.log(`   • ${suggestion.action || suggestion.description || JSON.stringify(suggestion)}`);
+        });
+      }
 
       if (testPassed) {
         console.log(`\n✅ TEST PASSED`);

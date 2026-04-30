@@ -346,10 +346,13 @@ function calculateAtsScore(resume, jd, resumeSkillsByCategory, jdSkillsByCategor
     (formattingScoreValue * 0.1)
   );
 
-  console.log('[ATS] Final ATS Score: ' + finalScore + '%');
+  // Ensure score is a valid number
+  const validFinalScore = isNaN(finalScore) ? 0 : Math.max(0, Math.min(100, finalScore));
+
+  console.log('[ATS] Final ATS Score: ' + validFinalScore + '%');
 
   return {
-    score: finalScore,  // Return actual score without artificial capping
+    score: validFinalScore,  // Return actual score without artificial capping
     breakdown: {
       keywordDensity: Math.round(keywordDensity),
       skillsPresence: Math.round(skillsPresence),
@@ -493,6 +496,17 @@ function findMatchedAndMissingSkills(resumeSkillsByCategory, jdSkillsByCategory)
  */
 function analyzeResumeAndJD(resume, jobDescription) {
   try {
+    // ============ INPUT VALIDATION ============
+    if (!resume || typeof resume !== 'string' || resume.trim().length === 0) {
+      throw new Error('Invalid resume: Must be a non-empty string');
+    }
+    if (!jobDescription || typeof jobDescription !== 'string' || jobDescription.trim().length === 0) {
+      throw new Error('Invalid job description: Must be a non-empty string');
+    }
+    if (resume.length > 50000 || jobDescription.length > 50000) {
+      throw new Error('Input too large: Maximum 50,000 characters per document');
+    }
+
     // ============ STEP 1: Extract Skills ============
     const resumeSkillsByCategory = extractSkillsByCategory(resume);
     const jdSkillsByCategory = extractSkillsByCategory(jobDescription);

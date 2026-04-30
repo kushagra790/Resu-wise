@@ -48,6 +48,7 @@ const KEYWORD_NORMALIZATION = {
   'pytorch': ['pytorch', 'torch'],
   'tensorflow': ['tensorflow', 'tf'],
   'sqlalchemy': ['sqlalchemy', 'sql alchemy'],
+  'machinelearning': ['ml', 'machine learning', 'machinelearning'],
   'sqlmodel': ['sqlmodel', 'sql model'],
   'huggingface': ['huggingface', 'hugging face', 'hf'],
 };
