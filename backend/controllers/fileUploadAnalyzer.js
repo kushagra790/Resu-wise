@@ -5,11 +5,41 @@ const { analyzeResumeAndJD, extractYearsOfExperience, calculateExperienceMatch }
 /**
  * Extract text from PDF file
  */
+function extractTextFromMalformedPDF(fileBuffer) {
+  try {
+    const rawData = fileBuffer.toString('latin1');
+    const matches = rawData.match(/\(([^\)]+)\)/g);
+    if (!matches || matches.length === 0) {
+      return '';
+    }
+
+    const decoded = matches
+      .map(item => item.slice(1, -1))
+      .map(text => text.replace(/\\n/g, '\n').replace(/\\r/g, '\r').replace(/\\t/g, '\t').replace(/\\([()\\])/g, '$1'))
+      .join(' ');
+
+    return decoded.replace(/\s+/g, ' ').trim();
+  } catch (error) {
+    return '';
+  }
+}
+
 async function extractTextFromPDF(fileBuffer) {
   try {
     const data = await pdfParse(fileBuffer);
-    return data.text;
+    if (data && typeof data.text === 'string' && data.text.trim().length > 0) {
+      return data.text;
+    }
+    throw new Error('PDF text extraction returned empty content');
   } catch (error) {
+    console.warn('PDF parser failed:', error.message);
+
+    const fallbackText = extractTextFromMalformedPDF(fileBuffer);
+    if (fallbackText && fallbackText.trim().length > 20) {
+      console.log('PDF fallback extraction succeeded with malformed PDF content');
+      return fallbackText;
+    }
+
     throw new Error(`Failed to parse PDF: ${error.message}`);
   }
 }
