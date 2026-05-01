@@ -1,0 +1,81 @@
+name: Simple EC2 CI/CD
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    name: Test and Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: npm ci
+
+      - name: Check backend syntax
+        working-directory: ./backend
+        run: node -c server.js
+
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: ./frontend
+        run: npm run build
+
+  deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Deploy with Docker Compose
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          script: |
+            set -e
+
+            APP_DIR=/home/${{ secrets.EC2_USER }}/resuwise
+            REPO_URL=https://github.com/${{ github.repository }}.git
+
+            mkdir -p "$APP_DIR"
+            cd "$APP_DIR"
+
+            if [ ! -d .git ]; then
+              git clone "$REPO_URL" .
+            else
+              git pull --ff-only origin main
+            fi
+
+            printf '%s\n' \
+              'JWT_SECRET=${{ secrets.JWT_SECRET }}' \
+              'CORS_ORIGIN=http://${{ secrets.EC2_HOST }}:3000' \
+              > .env
+
+            docker compose down
+            docker compose up -d --build
+
+            sleep 15
+            curl -f http://localhost:3000
+            curl -f http://localhost:3000/api/health
+
+            docker image prune -f

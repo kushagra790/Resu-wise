@@ -1,1 +1,0 @@
-{"status":"Server is running","mongodb":"connected"}
