@@ -370,7 +370,7 @@ async function fetchQuestions() {
     console.log("Fetching questions for category:", selectedCategory, "(", categoryLabel, ")");
     
     // Use backend API - the category must be converted to uppercase for the database
-    const url = `http://localhost:5000/api/quiz/questions?category=${selectedCategory.toUpperCase()}&limit=5`;
+    const url = `/api/quiz/questions?category=${selectedCategory.toUpperCase()}&limit=5`;
 
     try {
         const response = await fetch(url);
@@ -403,7 +403,7 @@ async function fetchQuestions() {
     } catch (error) {
         console.error("Error fetching questions:", error);
         if (error.name === 'TypeError') {
-            alert("Could not connect to the quiz backend at http://localhost:5000. Please start the backend server and try again.");
+            alert("Could not connect to the quiz backend. Please make sure the app is running and try again.");
         } else {
             alert("Failed to load quiz questions: " + error.message);
         }
