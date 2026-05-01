@@ -16,6 +16,8 @@ const KEYWORD_NORMALIZATION = {
   'angular': ['angularjs', 'angular.js', 'angular'],
   'nextjs': ['next.js', 'nextjs', 'next'],
   'nestjs': ['nest.js', 'nestjs', 'nest'],
+  'html': ['html5', 'html'],
+  'css': ['css3', 'css'],
   
   // Backend variations
   'springboot': ['spring boot', 'springboot', 'spring-boot'],
@@ -23,6 +25,9 @@ const KEYWORD_NORMALIZATION = {
   
   // Database variations
   'postgresql': ['postgres', 'postgresql', 'postgres-sql'],
+  'mongodb': ['mongo', 'mongo db', 'mongodb'],
+  'sql': ['mysql', 'structured query language', 'sql'],
+  'database': ['db', 'databases', 'database'],
   'csharp': ['c#', 'csharp', 'c-sharp'],
   
   // DevOps variations
@@ -48,7 +53,8 @@ const KEYWORD_NORMALIZATION = {
   'pytorch': ['pytorch', 'torch'],
   'tensorflow': ['tensorflow', 'tf'],
   'sqlalchemy': ['sqlalchemy', 'sql alchemy'],
-  'machinelearning': ['ml', 'machine learning', 'machinelearning'],
+  'machinelearning': ['ml', 'machine learning', 'machinelearning', 'ai/ml'],
+  'artificialintelligence': ['ai', 'artificial intelligence'],
   'sqlmodel': ['sqlmodel', 'sql model'],
   'huggingface': ['huggingface', 'hugging face', 'hf'],
 };
