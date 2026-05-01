@@ -304,25 +304,7 @@
 </body>
 
 
-<script type="module">
-    // Import Firebase SDK components
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
-
-// Your Firebase configuration
-const firebaseConfig = {
-    apiKey: "AIzaSyBhd2TdGnJspmv62dr6DOQMsyu_HOlwhZ8",
-    authDomain: "resume-builder-c55d3.firebaseapp.com",
-    projectId: "resume-builder-c55d3",
-    storageBucket: "resume-builder-c55d3.appspot.com",
-    messagingSenderId: "329272789238",
-    appId: "1:329272789238:web:6d2f3044ff45211ff4c4d7"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
+<script>
 // Global Variables
 const apiToken = "kr74dIaJZI6p9ysIahEfFSFPGmjneHDBT7wDAXZj";
 const questionContainer = document.getElementById('question-container');
@@ -511,9 +493,8 @@ function getUserIdentity() {
     return { email, fullname };
 }
 
-// Save the highest score for each skill in Firestore
-async function saveScore(skill, newScore) {
-    const authUser = getLoggedInUser();
+// Save the highest score for each skill in browser storage.
+function saveScore(skill, newScore) {
     let { email, fullname } = getUserIdentity();
 
     // If email is not available from session or auth state, prompt the user once.
@@ -530,32 +511,20 @@ async function saveScore(skill, newScore) {
         sessionStorage.setItem('fullname', fullname);
     }
 
-    const userDocRef = doc(db, "users", email);
-
     try {
-        const userDoc = await getDoc(userDocRef);
+        const storageKey = `resuwise_quiz_scores_${email}`;
+        const existing = JSON.parse(localStorage.getItem(storageKey) || '{}');
+        const scores = existing.scores || {};
 
-        if (userDoc.exists()) {
-            const userData = userDoc.data();
-            const scores = userData.scores || {}; // Initialize scores map if not present
-
-            if (!scores[skill] || newScore > scores[skill]) {
-                scores[skill] = newScore;
-                console.log(`New high score for ${skill}: ${newScore}`);
-            } else {
-                console.log(`Current score (${newScore}) is not higher than the stored score (${scores[skill]}) for ${skill}.`);
-            }
-
-            await setDoc(userDocRef, { scores }, { merge: true });
+        if (!scores[skill] || newScore > scores[skill]) {
+            scores[skill] = newScore;
+            console.log(`New high score for ${skill}: ${newScore}`);
         } else {
-            const newUserData = {
-                fullname,
-                email,
-                scores: { [skill]: newScore }
-            };
-            await setDoc(userDocRef, newUserData);
+            console.log(`Current score (${newScore}) is not higher than the stored score (${scores[skill]}) for ${skill}.`);
         }
-        console.log("Score saved successfully.");
+
+        localStorage.setItem(storageKey, JSON.stringify({ fullname, email, scores }));
+        console.log("Score saved successfully in localStorage.");
     } catch (error) {
         console.error("Error saving score:", error);
     }

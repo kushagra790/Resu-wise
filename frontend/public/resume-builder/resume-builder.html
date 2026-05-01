@@ -814,29 +814,7 @@
     });
 
     </script>
-    <script type="module">
-    // Import Firebase SDK components
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
-
-    // Your Firebase configuration
-    const firebaseConfig = {
-        apiKey: "AIzaSyBhd2TdGnJspmv62dr6DOQMsyu_HOlwhZ8",
-        authDomain: "resume-builder-c55d3.firebaseapp.com",
-        projectId: "resume-builder-c55d3",
-        storageBucket: "resume-builder-c55d3.appspot.com",
-        messagingSenderId: "329272789238",
-        appId: "1:329272789238:web:6d2f3044ff45211ff4c4d7"
-    };
-
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    const fullname = sessionStorage.getItem('fullname');
-    const email = sessionStorage.getItem('email');
-    const scores = sessionStorage.getItem('scores');
-
+    <script>
     function getLoggedInUser() {
         const storedAuthUser = localStorage.getItem('authUser');
         if (storedAuthUser) {
@@ -857,8 +835,8 @@
         };
     }
 
-    // Fetch scores from Firebase and display the keys in preview-skills div
-    async function fetchScores() {
+    // Fetch locally saved quiz scores and display the skill names in the resume preview.
+    function fetchScores() {
     const { email } = getUserIdentity();
     console.log("Attempting to fetch scores. Email:", email);
     
@@ -868,47 +846,33 @@
         return;
     }
 
-    const userDocRef = doc(db, "users", email);
-
     try {
-        const userDoc = await getDoc(userDocRef);
+        const storageKey = `resuwise_quiz_scores_${email}`;
+        const userData = JSON.parse(localStorage.getItem(storageKey) || '{}');
+        const scores = userData.scores || {};
+        const keys = Object.keys(scores);
+        console.log("Skills from assessments:", keys, scores);
 
-        if (userDoc.exists()) {
-            const userData = userDoc.data();
-            const scores = userData.scores || {}; // Fetch scores map, default to empty object
+        if (keys.length === 0) {
+            alert("No assessment results found. Please take an assessment first!");
+            return;
+        }
 
-            // Fetch keys only from the scores object
-            const keys = Object.keys(scores);
-            console.log("Skills from assessments:", keys, scores);
+        const previewSkillsDiv = document.getElementById("preview-skills");
+        if (previewSkillsDiv) {
+            previewSkillsDiv.innerHTML = '';
 
-            if (keys.length === 0) {
-                alert("No assessment results found. Please take some skill assessments first!");
-                return;
-            }
+            const skillsDiv = document.createElement('div');
+            skillsDiv.classList.add('skills-list');
 
-            // Find the div with class 'preview-skills'
-            const previewSkillsDiv = document.getElementById("preview-skills");
-            if (previewSkillsDiv) {
-                // Clear previous content
-                previewSkillsDiv.innerHTML = '';
-                
-                // Create a new div to hold the skills keys (without scores)
-                const skillsDiv = document.createElement('div');
-                skillsDiv.classList.add('skills-list');
+            const categoryDisplayMap = { CODE: 'Programming' };
+            const skillsList = keys.map(key => formatSkillName(categoryDisplayMap[key] || key)).join(', ');
+            skillsDiv.innerHTML = skillsList;
+            console.log("Adding skills to resume:", skillsList);
 
-                // Show ALL skills (lowered threshold or removed it), display WITHOUT scores
-                const categoryDisplayMap = { CODE: 'Programming' };
-                const skillsList = keys.map(key => formatSkillName(categoryDisplayMap[key] || key)).join(', ');
-                skillsDiv.innerHTML = skillsList;
-                console.log("Adding skills to resume:", skillsList);
-
-                // Append the new div inside the preview-skills div
-                previewSkillsDiv.appendChild(skillsDiv);
-                alert(`Added ${keys.length} skills from assessments to your resume!`);
-            }
-        } else {
-            alert("No profile found. Please create a profile first!");
-            console.log("User document does not exist");
+            previewSkillsDiv.appendChild(skillsDiv);
+            saveResumeState();
+            alert(`Added ${keys.length} skills from assessments to your resume!`);
         }
     } catch (error) {
         console.error("Error fetching scores:", error);
