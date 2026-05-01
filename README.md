@@ -145,10 +145,15 @@ VITE_API_BASE_URL=http://localhost:5000
 
 ## 👨‍💻 Author
 
+<<<<<<< HEAD
 Ekta Agrawal  
+Kushagra Singh
+Srishti Agarwal
 GitHub: https://github.com/EktaAgrawal08
-kushagra singh
-srishti agarwal
+
+=======
+GitHub: https://github.com/EktaAgrawal08  
+>>>>>>> c90b5fa (Authors)
 
 ---
 
