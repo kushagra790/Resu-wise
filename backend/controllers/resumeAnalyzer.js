@@ -226,6 +226,37 @@ function calculateSkillsPresence(resumeSkillsByCategory, jdSkillsByCategory) {
 }
 
 /**
+ * Extract skills section from resume
+ * Handles variations like "Skills", "Technical Skills", "Core Competencies", etc.
+ * Returns text content of the skills section, or empty string if not found
+ */
+function extractSkillsSection(text) {
+  if (!text || typeof text !== 'string') {
+    return '';
+  }
+
+  // Pattern to match skill section headers with various names
+  // Handles: Skills, Technical Skills, Core Competencies, Proficiencies, Expertise, Programming Skills, etc.
+  const skillsSectionPattern = /(?:^|\n)\s*(?:SKILLS|TECHNICAL\s+SKILLS|CORE\s+COMPETENCIES|COMPETENCIES|PROFICIENCIES|EXPERTISE|PROGRAMMING\s+SKILLS|KEY\s+SKILLS|REQUIRED\s+SKILLS|TECHNICAL\s+EXPERTISE|LANGUAGES?\s+&?\s+(?:TOOLS|TECHNOLOGIES|FRAMEWORKS|SKILLS))[:\s]*\n([\s\S]*?)(?=\n\s*(?:EDUCATION|EXPERIENCE|PROJECTS?|SUMMARY|OBJECTIVE|CERTIFICATIONS|AWARDS|REFERENCES|PROFESSIONAL|WORK|$))/i;
+
+  const match = text.match(skillsSectionPattern);
+  
+  if (match && match[1]) {
+    return match[1].trim();
+  }
+
+  // Fallback: look for content between "Skills" and next major section
+  const fallbackPattern = /(?:^|\n)\s*SKILLS[:\s]*\n([\s\S]*?)(?=\n\s*[A-Z][A-Z\s]{2,}:|$)/i;
+  const fallbackMatch = text.match(fallbackPattern);
+  
+  if (fallbackMatch && fallbackMatch[1]) {
+    return fallbackMatch[1].trim();
+  }
+
+  return '';
+}
+
+/**
  * Detect standard resume sections
  * Returns object with section detection results
  */
@@ -392,35 +423,36 @@ function calculateAtsScoreResumeOnly(resume) {
 
 /**
  * Calculate Match Score between Resume and JD
- * Formula: (TF-IDF × 0.40) + (Semantic × 0.30) + (Skill Match × 0.30)
+ * Formula: (Skill Match × 0.60) + (TF-IDF × 0.20) + (Semantic × 0.20)
+ * PRIORITIZES SKILL MATCHING as the primary scoring factor
  */
 function calculateMatchScore(resume, jd, resumeSkillsByCategory, jdSkillsByCategory) {
-  // Component 1: TF-IDF Similarity (40%)
-  const tfidfScore = calculateTFIDFSimilarity(resume, jd, resumeSkillsByCategory, jdSkillsByCategory);
-  
-  // Component 2: Semantic Similarity (30%)
-  const semanticScore = calculateSemanticSimilarityScore(resume, jd, resumeSkillsByCategory, jdSkillsByCategory);
-  
-  // Component 3: Skill Match (30%)
+  // Component 1: Skill Match (60%) - PRIMARY FACTOR
   const skillMatchScore = calculateSkillsMatch(resumeSkillsByCategory, jdSkillsByCategory);
   
+  // Component 2: TF-IDF Similarity (20%)
+  const tfidfScore = calculateTFIDFSimilarity(resume, jd, resumeSkillsByCategory, jdSkillsByCategory);
+  
+  // Component 3: Semantic Similarity (20%)
+  const semanticScore = calculateSemanticSimilarityScore(resume, jd, resumeSkillsByCategory, jdSkillsByCategory);
+  
   const finalScore = Math.round(
-    (tfidfScore * 0.40) +
-    (semanticScore * 0.30) +
-    (skillMatchScore * 0.30)
+    (skillMatchScore * 0.60) +
+    (tfidfScore * 0.20) +
+    (semanticScore * 0.20)
   );
 
   return {
     score: Math.max(0, Math.min(100, finalScore)),
     breakdown: {
+      skillMatch: Math.round(skillMatchScore),
       tfidf: Math.round(tfidfScore),
-      semantic: Math.round(semanticScore),
-      skillMatch: Math.round(skillMatchScore)
+      semantic: Math.round(semanticScore)
     },
     weights: {
-      tfidf: 0.40,
-      semantic: 0.30,
-      skillMatch: 0.30
+      skillMatch: 0.60,
+      tfidf: 0.20,
+      semantic: 0.20
     }
   };
 }
@@ -704,7 +736,9 @@ function analyzeResumeAndJD(resume, jobDescription) {
     }
 
     // ============ STEP 1: Extract Skills ============
-    const resumeSkillsByCategory = extractSkillsByCategory(resume);
+    // Extract skills ONLY from the Skills section of the resume
+    const skillsSection = extractSkillsSection(resume);
+    const resumeSkillsByCategory = extractSkillsByCategory(skillsSection.length > 0 ? skillsSection : resume);
     const jdSkillsByCategory = extractSkillsByCategory(jobDescription);
 
     // Find matched and missing skills by category
@@ -743,9 +777,10 @@ function analyzeResumeAndJD(resume, jobDescription) {
 
     // ============ STEP 4: Calculate Semantic Similarity (NEW) ============
     console.log('[SEMANTIC] Calculating semantic similarity...');
-    const semanticResult = calculateSemanticSimilarity(resume, jobDescription);
+    // Use only Skills section from resume for semantic analysis
+    const semanticResult = calculateSemanticSimilarity(skillsSection.length > 0 ? skillsSection : resume, jobDescription);
     const semanticScore = semanticResult.score;
-    const semanticInsights = getSemanticInsights(resume, jobDescription);
+    const semanticInsights = getSemanticInsights(skillsSection.length > 0 ? skillsSection : resume, jobDescription);
     console.log('[SEMANTIC] Semantic score:', semanticScore + '%');
 
     // ============ STEP 5: Extract Experience ============
@@ -754,14 +789,17 @@ function analyzeResumeAndJD(resume, jobDescription) {
     const experienceMatch = calculateExperienceMatch(resumeExperience, jdExperience);
 
     // Extract flat arrays for backward compatibility
-    const resumeSkills = extractKeywords(resume);
+    // For resume: use only Skills section
+    const resumeSkills = extractKeywords(skillsSection.length > 0 ? skillsSection : resume);
     const jdSkills = extractKeywords(jobDescription);
 
     // ============ STEP 6: TF-IDF Vectorization ============
+    // Use skills section for TF-IDF matching with JD
+    const textForTFIDF = skillsSection.length > 0 ? skillsSection : resume;
     const vectorizer = new TFIDFVectorizer();
-    vectorizer.fit([resume, jobDescription]);
+    vectorizer.fit([textForTFIDF, jobDescription]);
 
-    const resumeTokens = vectorizer.preprocess(resume);
+    const resumeTokens = vectorizer.preprocess(textForTFIDF);
     const jdTokens = vectorizer.preprocess(jobDescription);
     
     const resumeTokensSet = new Set(resumeTokens);
@@ -772,7 +810,7 @@ function analyzeResumeAndJD(resume, jobDescription) {
     console.log('[TF-IDF] Total vocabulary size:', vectorizer.getVocabularySize());
     console.log('[TF-IDF] Shared tokens:', sharedTokens.size);
 
-    const resumeVector = vectorizer.transform(resume);
+    const resumeVector = vectorizer.transform(textForTFIDF);
     const jdVector = vectorizer.transform(jobDescription);
 
     let tfidfScore = Math.round(cosineSimilarity(resumeVector, jdVector) * 100);
@@ -802,7 +840,8 @@ function analyzeResumeAndJD(resume, jobDescription) {
     const atsScore = atsScoreResult.score;
 
     // Match Score: Resume-JD compatibility
-    const matchScoreResult = calculateMatchScore(resume, jobDescription, resumeSkillsByCategory, jdSkillsByCategory);
+    // Use only Skills section from resume for matching
+    const matchScoreResult = calculateMatchScore(skillsSection.length > 0 ? skillsSection : resume, jobDescription, resumeSkillsByCategory, jdSkillsByCategory);
     const matchScore = matchScoreResult.score;
 
     // ============ STEP 8: Check for Generic JD Warning ============
@@ -840,7 +879,7 @@ function analyzeResumeAndJD(resume, jobDescription) {
     // ============ STEP 10: Create Score Explanations ============
     const scoreExplanations = {
       atsScore: `ATS Score evaluates resume quality and structure independently of the job description. Your score of ${atsScore}% is based on: ${atsScoreResult.breakdown.sections.detected.join(', ')} sections detected, contact information, formatting quality, and technical skills presence.`,
-      matchScore: `Match Score measures compatibility between your resume and job requirements using TF-IDF (${matchScoreResult.breakdown.tfidf}%), semantic similarity (${matchScoreResult.breakdown.semantic}%), and skill matching (${matchScoreResult.breakdown.skillMatch}%).`,
+      matchScore: `Match Score measures how well your resume skills match the job requirements. Score breakdown: Skill Matching (${matchScoreResult.breakdown.skillMatch}%, 60% weight) - PRIMARY FACTOR, TF-IDF text analysis (${matchScoreResult.breakdown.tfidf}%, 20% weight), and semantic similarity (${matchScoreResult.breakdown.semantic}%, 20% weight).`,
       overall: `Overall assessment combines ATS quality (${atsScore}%) and job match (${matchScore}%) for comprehensive evaluation.`
     };
 
