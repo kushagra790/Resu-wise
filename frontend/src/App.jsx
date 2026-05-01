@@ -55,15 +55,8 @@ export default function App() {
           }
         />
 
-        {/* Resume Builder Route - Protected */}
-        <Route
-          path="/resume-builder"
-          element={
-            <ProtectedRoute>
-              <ResumeBuilderPage />
-            </ProtectedRoute>
-          }
-        />
+        {/* Resume Builder Route */}
+        <Route path="/resume-builder" element={<ResumeBuilderPage />} />
       </Routes>
     </Router>
   );
