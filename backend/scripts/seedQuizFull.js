@@ -589,7 +589,7 @@ async function seedDatabase() {
   }
 }
 
-seedDatabase();
+// Keep this file importable by the app; run the seeder only from the CLI.
 
 async function seedDatabase() {
   try {
@@ -622,4 +622,11 @@ async function seedDatabase() {
   }
 }
 
-seedDatabase();
+if (require.main === module) {
+  seedDatabase();
+}
+
+module.exports = {
+  allQuestions,
+  seedDatabase
+};

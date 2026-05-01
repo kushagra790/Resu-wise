@@ -4,12 +4,11 @@ const mongoose = require('mongoose');
 require('dotenv').config();
 
 const connectDB = require('./config/database');
+const Question = require('./models/Question');
+const { allQuestions } = require('./scripts/seedQuizFull');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-
-// Connect to MongoDB
-connectDB();
 
 // Middleware
 const corsOrigin = process.env.CORS_ORIGIN;
@@ -51,8 +50,30 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal Server Error', message: err.message });
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 ResuWise Backend running on http://localhost:${PORT}`);
+async function ensureQuizQuestionsSeeded() {
+  const questionCount = await Question.estimatedDocumentCount();
+
+  if (questionCount > 0) {
+    console.log(`[Quiz Seed] ${questionCount} quiz questions already available`);
+    return;
+  }
+
+  const inserted = await Question.insertMany(allQuestions);
+  console.log(`[Quiz Seed] Seeded ${inserted.length} quiz questions`);
+}
+
+async function startServer() {
+  await connectDB();
+  await ensureQuizQuestionsSeeded();
+
+  app.listen(PORT, () => {
+    console.log(`🚀 ResuWise Backend running on http://localhost:${PORT}`);
+  });
+}
+
+startServer().catch((error) => {
+  console.error('Failed to start ResuWise Backend:', error);
+  process.exit(1);
 });
 
 module.exports = app;
