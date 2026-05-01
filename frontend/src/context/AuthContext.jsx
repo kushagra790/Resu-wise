@@ -32,7 +32,7 @@ export function AuthProvider({ children }) {
       setError(null);
       setLoading(true);
 
-      const response = await api.post('/api/auth/login', {
+      const response = await api.post('/auth/login', {
         email,
         password
       });
@@ -78,7 +78,7 @@ export function AuthProvider({ children }) {
       setError(null);
       setLoading(true);
 
-      const response = await api.post('/api/auth/signup', {
+      const response = await api.post('/auth/signup', {
         name,
         email,
         password,

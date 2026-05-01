@@ -27,7 +27,7 @@ export default function Signup() {
       }
 
       try {
-        const response = await api.post('/api/auth/check-password-strength', {
+        const response = await api.post('/auth/check-password-strength', {
           password
         });
         setPasswordStrength(response.data);

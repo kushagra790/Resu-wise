@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import axios from 'axios';
+import api from '../utils/api';
 import ResultsSection from './ResultsSection';
 import { saveAnalysisToHistory } from '../utils/storageManager';
 
@@ -72,8 +72,8 @@ export default function AnalysisPage({ onBack }) {
 
       setLoading(true);
       try {
-        const response = await axios.post(
-          'http://localhost:5000/api/analyze/text',
+        const response = await api.post(
+          '/analyze/text',
           { resume: resume.trim(), jobDescription: jobDescription.trim() },
           { headers: { 'Content-Type': 'application/json' } }
         );
@@ -101,8 +101,8 @@ export default function AnalysisPage({ onBack }) {
 
         // Note: Don't set Content-Type header manually - axios handles it automatically
         // Setting it manually prevents axios from adding the boundary parameter
-        const response = await axios.post(
-          'http://localhost:5000/api/analyze/upload',
+        const response = await api.post(
+          '/analyze/upload',
           formData
         );
 

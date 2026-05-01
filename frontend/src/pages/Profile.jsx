@@ -52,7 +52,7 @@ export default function Profile() {
       }
 
       // Call update API
-      const response = await api.put('/api/auth/updateprofile', {
+      const response = await api.put('/auth/updateprofile', {
         name: formData.name.trim(),
         email: formData.email
       });
