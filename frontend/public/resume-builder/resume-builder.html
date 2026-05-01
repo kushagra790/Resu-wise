@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Resume Builder</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            display: flex;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            color: #e5e7eb;
+            min-height: 100vh;
+        }
+
+        /* Sidebar styling */
+        .sidebar {
+            width: 30%;
+            padding: 25px;
+            background: linear-gradient(180deg, rgba(17, 24, 39, 0.8) 0%, rgba(15, 23, 42, 0.8) 100%);
+            border: 1px solid #374151;
+            margin: 10px;
+            border-radius: 12px;
+            height: calc(100vh - 20px);
+            max-height: calc(100vh - 20px);
+            overflow-y: auto;
+            position: sticky;
+            top: 10px;
+            align-self: flex-start;
+            backdrop-filter: blur(10px);
+        }
+
+        .sidebar h2 {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #fff 0%, #60a5fa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-header {
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid #4b5563;
+            padding: 12px 15px;
+            font-size: 1em;
+            background-color: rgba(31, 41, 55, 0.5);
+            color: #f3f4f6;
+            border-radius: 8px;
+            margin-top: 12px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-header:hover {
+            background-color: rgba(59, 130, 246, 0.2);
+            border-color: #3b82f6;
+            transform: translateX(4px);
+        }
+
+        .section-content {
+            display: none;
+            margin-top: 12px;
+            padding: 8px 0;
+        }
+
+        .sidebar input,
+        .sidebar textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            border-radius: 8px;
+            border: 1px solid #4b5563;
+            background-color: rgba(31, 41, 55, 0.5);
+            color: #e5e7eb;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar input:focus,
+        .sidebar textarea:focus {
+            outline: none;
+            border-color: #2563eb;
+            background-color: rgba(37, 99, 235, 0.1);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .sidebar input::placeholder,
+        .sidebar textarea::placeholder {
+            color: #9ca3af;
+        }
+
+        .add-button,
+        #addSkills,
+        #skillsAssessmentPage,
+        #download-pdf,
+        .delete-button {
+            margin-top: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            width: 100%;
+            transition: all 0.3s ease;
+            color: white;
+            text-align: center;
+        }
+
+        .add-button {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .add-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        #addSkills {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        #addSkills:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        #skillsAssessmentPage {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+        }
+
+        #skillsAssessmentPage:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+        }
+
+        #download-pdf {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+        }
+
+        #download-pdf:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+        }
+
+        .delete-button {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+
+        .delete-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+        }
+
+        /* Resume preview styling - Light theme for PDF/Print */
+        #resume {
+            width: min(100%, 210mm);
+            max-width: 210mm;
+            padding: 14mm 16mm;
+            background-color: #ffffff;
+            border: 1px solid #c1c1c1;
+            margin: 10px auto;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            color: #111;
+            box-sizing: border-box;
+        }
+
+        .section,
+        .content-group,
+        .entry-description,
+        .preview-skills,
+        #preview-education,
+        #preview-experience,
+        #preview-project,
+        #preview-achievement,
+        #preview-activities {
+            text-align: justify;
+        }
+
+        .entry-description ul,
+        #preview-achievement ul,
+        #preview-activities ul {
+            padding-left: 18px;
+            margin: 8px 0 12px 0;
+            list-style-position: inside;
+        }
+
+        .entry-description li,
+        #preview-achievement li,
+        #preview-activities li {
+            margin-bottom: 6px;
+            line-height: 1.5;
+            text-align: left;
+        }
+
+        .header,
+        .section,
+        .content-group {
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #000;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin: 0 auto 10px auto;
+            color: #000;
+            font-weight: 700;
+            max-width: 100%;
+        }
+
+        .header-contact {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            font-size: 13px;
+            flex-wrap: wrap;
+            align-items: center;
+            color: #000;
+        }
+
+        .header-contact > * {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .header-contact a {
+            color: #000;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            line-height: 1;
+        }
+
+        .header-contact i {
+            line-height: 1;
+            vertical-align: middle;
+            font-size: 1em;
+        }
+
+        .header-contact a:hover {
+            text-decoration: underline;
+        }
+
+        .divider {
+            color: #000;
+            margin: 0 5px;
+        }
+
+        .section-title {
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            border-bottom: 1.5px solid #666;
+            padding-bottom: 4px;
+            margin: 15px 0 10px 0;
+            color: #111;
+            letter-spacing: 0.5px;
+        }
+
+        .content-group {
+            margin-bottom: 12px;
+        }
+
+        .entry-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2px;
+        }
+
+        .entry-title {
+            font-weight: 700;
+            font-size: 14px;
+            color: #111;
+        }
+
+        .entry-date {
+            font-size: 13px;
+            color: #444;
+            font-weight: 600;
+        }
+
+        .entry-subtitle {
+            font-style: italic;
+            font-size: 13px;
+            color: #333;
+        }
+
+        .entry-description {
+            font-size: 13px;
+            color: #222;
+            line-height: 1.5;
+            margin-top: 3px;
+        }
+
+        .skills-category {
+            margin-bottom: 5px;
+        }
+
+        .skills-label {
+            font-weight: 700;
+            display: inline;
+            color: #111;
+        }
+
+        .skills-content {
+            display: inline;
+            color: #222;
+            font-size: 13px;
+        }
+
+        ul, li {
+            margin: 4px 0;
+            padding-left: 18px;
+            font-size: 13px;
+            color: #222;
+            text-align: left;
+        }
+
+        .same {
+            display: flex;
+            justify-content: flex-start;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        img {
+            width: 18px;
+            height: 18px;
+            position: relative;
+            top: 2px;
+            filter: brightness(0) invert(1);
+        }
+
+        /* Scrollbar styling */
+        .sidebar::-webkit-scrollbar,
+        #resume::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .sidebar::-webkit-scrollbar-track,
+        #resume::-webkit-scrollbar-track {
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 4px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb,
+        #resume::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            border-radius: 4px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover,
+        #resume::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            body {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+            }
+
+            #resume {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar with collapsible sections -->
+    <div class="sidebar">
+        <h2>Resume Details</h2>
+
+        <!-- Personal Info Section -->
+        <div class="section-header" onclick="toggleSection('personal-info')"><img src="icons/user.svg">&nbsp;&nbsp;&nbsp;Personal Info</div>
+        <div class="section-content" id="personal-info">
+            <label for="name">Name:</label>
+            <input type="text" id="name" placeholder="Enter your name" oninput="updatePreview()">
+            <label for="location">Location:</label>
+            <input type="text" id="location" placeholder="Enter your location" oninput="updatePreview()">
+            <label for="contact">Contact Number:</label>
+            <input type="text" id="contact" placeholder="Enter contact number" maxlength="10" pattern="[0-9]{10}" oninput="updatePreview()">
+            <label for="email">Email ID:</label>
+            <input type="email" id="email" placeholder="Enter email-id" oninput="updatePreview()">
+            <label for="github">GitHub URL:</label>
+            <input type="url" id="github" placeholder="Enter GitHub URL" oninput="updatePreview()">
+            <label for="linkedin">LinkedIn URL:</label>
+            <input type="url" id="linkedin" placeholder="Enter LinkedIn URL" oninput="updatePreview()">
+        </div>
+
+        <!-- Education Section with Add/Delete Functionality -->
+        <div class="section-header" onclick="toggleSection('education-section')"><img src="icons/open-book.svg">&nbsp;&nbsp;&nbsp;Education</div>
+        <div class="section-content" id="education-section">
+            <div id="education-fields"></div>
+            <button class="add-button" onclick="addEducation()">Add Education</button>
+        </div>
+
+        <!-- Experience Section with Add/Delete Functionality -->
+        <div class="section-header" onclick="toggleSection('experience-section')"><img src="icons/portfolio.svg">&nbsp;&nbsp;&nbsp;Experience</div>
+        <div class="section-content" id="experience-section">
+            <div id="experience-fields"></div>
+            <button class="add-button" onclick="addExperience()">Add Experience</button>
+        </div>
+
+        <!-- Skills Section -->
+        <div class="section-header" onclick="toggleSection('skills-section')"><img src="icons/solution.svg">&nbsp;&nbsp;&nbsp;Skills</div>
+        <div class="section-content" id="skills-section">
+            <!-- <textarea id="skills" placeholder="Enter your skills" oninput="updatePreview()"></textarea> -->
+             <button id="addSkills">Add Skills</button>
+             <button id="skillsAssessmentPage">Take Assessment</button>
+        </div>
+
+        <!-- Projects Section -->
+        <div class="section-header" onclick="toggleSection('project-section')"><img src="icons/layers.svg">&nbsp;&nbsp;&nbsp;Projects</div>
+        <div class="section-content" id="project-section">
+            <div id="project-fields"></div>
+            <button class="add-button" onclick="addProject()">Add Project</button>
+        </div>
+
+        <div class="section-header" onclick="toggleSection('achievement')"><img src="icons/medal.svg">&nbsp;&nbsp;&nbsp;Professional Achievements</div>
+        <div class="section-content" id="achievement">
+            <textarea placeholder="Achievements" oninput="updatePreview()" id="achievement-info"></textarea>
+        </div>
+        <div class="section-header" onclick="toggleSection('activities')"><img src="icons/assignments.svg">&nbsp;&nbsp;&nbsp;Co-Curricular Activities</div>
+        <div class="section-content" id="activities">
+            <textarea placeholder="Co-Curricular Activities" oninput="updatePreview()" id="activities-info"></textarea>
+        </div>
+        <button id="download-pdf">Download as PDF</button>
+    </div>
+
+    <!-- Resume Preview -->
+    <div id="resume">
+        <div class="header">
+            <h1 id="preview-name">Your Name</h1>
+            <div class="header-contact">
+                <a href="mailto:" id="preview-email-link"><i class="bi bi-envelope-fill"></i><span id="preview-email-text">email@example.com</span></a>
+                <span class="divider">|</span>
+                <span class="preview-item"><i class="bi bi-geo-alt-fill"></i><span id="preview-location">Your Location</span></span>
+                <span class="divider">|</span>
+                <span class="preview-item"><i class="bi bi-telephone-fill"></i><span id="preview-contact">+1 234 567 8900</span></span>
+                <span class="divider">|</span>
+                <a href="#" id="preview-linkedin-link" target="_blank"><i class="bi bi-linkedin"></i><span>LinkedIn</span></a>
+                <span class="divider">|</span>
+                <a href="#" id="preview-github-link" target="_blank"><i class="bi bi-github"></i><span>GitHub</span></a>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Education</div>
+            <div id="preview-education"></div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Experience</div>
+            <div id="preview-experience"></div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Skills</div>
+            <div id="preview-skills"></div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Projects</div>
+            <div id="preview-project"></div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Professional Achievements</div>
+            <div id="preview-achievement"></div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Co-Curricular Activities</div>
+            <div id="preview-activities"></div>
+        </div>
+    </div>
+
+    <!-- JavaScript for Dynamic Fields and Preview Update -->
+    <script>
+        // Toggle visibility of sections
+        function toggleSection(id) {
+            const section = document.getElementById(id);
+            section.style.display = section.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function normalizeUrl(url) {
+            if (!url) return '';
+            const trimmed = url.trim();
+            if (/^(https?:\/\/|mailto:|tel:)/i.test(trimmed)) return trimmed;
+            return `https://${trimmed}`;
+        }
+
+        function formatSkillName(skill) {
+            return skill
+                .toLowerCase()
+                .split(/\s+/)
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(' ');
+        }
+
+        function formatTextAsList(text) {
+            if (!text) return '';
+            const lines = text.split('\n').map(line => line.trim()).filter(Boolean);
+            if (lines.length === 0) return '';
+            return `<ul>${lines.map(line => `<li>${line}</li>`).join('')}</ul>`;
+        }
+
+        // Update preview
+        function updatePreview() {
+            document.getElementById("preview-name").innerText = document.getElementById("name").value || "Your Name";
+            document.getElementById("preview-location").innerText = document.getElementById("location").value || "Your Location";
+            document.getElementById("preview-contact").innerText = document.getElementById("contact").value || "+1 234 567 8900";
+            
+            const email = document.getElementById("email").value.trim();
+            const emailLink = document.getElementById("preview-email-link");
+            const emailText = document.getElementById("preview-email-text");
+            emailText.innerText = email || "email@example.com";
+            emailLink.href = email ? `mailto:${email}` : "mailto:";
+            
+            const github = document.getElementById("github").value.trim();
+            const githubLink = document.getElementById("preview-github-link");
+            githubLink.href = github ? normalizeUrl(github) : "#";
+            githubLink.target = github ? "_blank" : "_self";
+            
+            const linkedin = document.getElementById("linkedin").value.trim();
+            const linkedinLink = document.getElementById("preview-linkedin-link");
+            linkedinLink.href = linkedin ? normalizeUrl(linkedin) : "#";
+            linkedinLink.target = linkedin ? "_blank" : "_self";
+            
+            const inputText = document.getElementById("achievement-info").value.trim();
+            document.getElementById("preview-achievement").innerHTML = formatTextAsList(inputText);
+            const inputText1 = document.getElementById("activities-info").value.trim();
+            document.getElementById("preview-activities").innerHTML = formatTextAsList(inputText1);
+
+            // Update dynamic sections
+            updateEducationPreview();
+            updateExperiencePreview();
+            updateProjectPreview();
+            saveResumeState();
+        }
+
+        function getResumeStorageKey() {
+            const storedAuthUser = localStorage.getItem('authUser');
+            if (storedAuthUser) {
+                try {
+                    const user = JSON.parse(storedAuthUser);
+                    if (user.email) {
+                        return `resuwise_resume_${user.email}`;
+                    }
+                } catch (error) {
+                    console.warn('Failed to parse authUser from localStorage', error);
+                }
+            }
+            return 'resuwise_resume_guest';
+        }
+
+        function saveResumeState() {
+            const state = {
+                personal: {
+                    name: document.getElementById('name').value,
+                    location: document.getElementById('location').value,
+                    contact: document.getElementById('contact').value,
+                    email: document.getElementById('email').value,
+                    github: document.getElementById('github').value,
+                    linkedin: document.getElementById('linkedin').value
+                },
+                achievement: document.getElementById('achievement-info').value,
+                activities: document.getElementById('activities-info').value,
+                education: Array.from(document.querySelectorAll('#education-fields .content-group')).map(field => ({
+                    degree: field.querySelector('input[data-type="degree"]').value,
+                    school: field.querySelector('input[data-type="school"]').value,
+                    cgpa: field.querySelector('input[data-type="cgpa"]').value,
+                    month: field.querySelector('input[data-type="month"]').value,
+                    year: field.querySelector('input[data-type="year"]').value
+                })),
+                experience: Array.from(document.querySelectorAll('#experience-fields .content-group')).map(field => ({
+                    company: field.querySelector('input[data-type="company"]').value,
+                    location: field.querySelector('input[data-type="location"]').value,
+                    title: field.querySelector('input[data-type="title"]').value,
+                    fromMonth: field.querySelector('input[data-type="from-month"]').value,
+                    fromYear: field.querySelector('input[data-type="from-year"]').value,
+                    toMonth: field.querySelector('input[data-type="to-month"]').value,
+                    toYear: field.querySelector('input[data-type="to-year"]').value,
+                    description: field.querySelector('textarea[data-type="description"]').value
+                })),
+                projects: Array.from(document.querySelectorAll('#project-fields .content-group')).map(field => ({
+                    project: field.querySelector('input[data-type="project"]').value,
+                    fromMonth: field.querySelector('input[data-type="from-month"]').value,
+                    fromYear: field.querySelector('input[data-type="from-year"]').value,
+                    toMonth: field.querySelector('input[data-type="to-month"]').value,
+                    toYear: field.querySelector('input[data-type="to-year"]').value,
+                    description: field.querySelector('textarea[data-type="description"]').value
+                }))
+            };
+            localStorage.setItem(getResumeStorageKey(), JSON.stringify(state));
+        }
+
+        function restoreResumeState() {
+            const saved = localStorage.getItem(getResumeStorageKey());
+            if (!saved) return;
+            try {
+                const state = JSON.parse(saved);
+                document.getElementById('name').value = state.personal?.name || '';
+                document.getElementById('location').value = state.personal?.location || '';
+                document.getElementById('contact').value = state.personal?.contact || '';
+                document.getElementById('email').value = state.personal?.email || '';
+                document.getElementById('github').value = state.personal?.github || '';
+                document.getElementById('linkedin').value = state.personal?.linkedin || '';
+                document.getElementById('achievement-info').value = state.achievement || '';
+                document.getElementById('activities-info').value = state.activities || '';
+
+                document.getElementById('education-fields').innerHTML = '';
+                (state.education || []).forEach(item => addEducation(item));
+                document.getElementById('experience-fields').innerHTML = '';
+                (state.experience || []).forEach(item => addExperience(item));
+                document.getElementById('project-fields').innerHTML = '';
+                (state.projects || []).forEach(item => addProject(item));
+
+                updatePreview();
+            } catch (error) {
+                console.warn('Failed to restore resume state', error);
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', restoreResumeState);
+
+        // Add and remove education fields
+        function addEducation(data = {}) {
+            const id = Date.now();
+            const educationField = document.createElement("div");
+            educationField.classList.add("content-group");
+            educationField.setAttribute("id", `education-${id}`);
+            educationField.innerHTML = `
+                <input type="text" placeholder="Degree" oninput="updatePreview()" data-type="degree" value="${data.degree || ''}">
+                <input type="text" placeholder="School Name" oninput="updatePreview()" data-type="school" value="${data.school || ''}">
+                <input type="text" placeholder="CGPA/Percentage" oninput="updatePreview()" data-type="cgpa" value="${data.cgpa || ''}">
+                <input type="text" placeholder="Month of Completion" oninput="updatePreview()" data-type="month" value="${data.month || ''}">
+                <input type="text" placeholder="Year of Completion" oninput="updatePreview()" data-type="year" value="${data.year || ''}">
+                <button class="delete-button" onclick="removeField('education-${id}')">Delete</button>
+            `;
+            document.getElementById("education-fields").appendChild(educationField);
+            saveResumeState();
+        }
+
+        function updateEducationPreview() {
+            const educationPreview = document.getElementById("preview-education");
+            educationPreview.innerHTML = "";
+            document.querySelectorAll("#education-fields .content-group").forEach(field => {
+                const degree = field.querySelector('input[data-type="degree"]').value || "Degree";
+                const school = field.querySelector('input[data-type="school"]').value || "School Name";
+                const cgpa = field.querySelector('input[data-type="cgpa"]').value || "";
+                const month = field.querySelector('input[data-type="month"]').value || "Month";
+                const year = field.querySelector('input[data-type="year"]').value || "Year";
+                educationPreview.innerHTML += `
+                    <div class="content-group">
+                        <div class="entry-header">
+                            <span class="entry-title">${school}</span>
+                            <span class="entry-date">${month} ${year}</span>
+                        </div>
+                        <div class="entry-subtitle">${degree} ${cgpa ? '- ' + cgpa : ''}</div>
+                    </div>`;
+            });
+        }
+
+        // Add and remove experience fields
+        function addExperience(data = {}) {
+            const id = Date.now();
+            const experienceField = document.createElement("div");
+            experienceField.classList.add("content-group");
+            experienceField.setAttribute("id", `experience-${id}`);
+            experienceField.innerHTML = `
+                <input type="text" placeholder="Company Name" oninput="updatePreview()" data-type="company" value="${data.company || ''}">
+                <input type="text" placeholder="Location" oninput="updatePreview()" data-type="location" value="${data.location || ''}">
+                <input type="text" placeholder="Job Title" oninput="updatePreview()" data-type="title" value="${data.title || ''}">
+                <input type="text" placeholder="From Month" oninput="updatePreview()" data-type="from-month" value="${data.fromMonth || ''}">
+                <input type="text" placeholder="From Year" oninput="updatePreview()" data-type="from-year" value="${data.fromYear || ''}">
+                <input type="text" placeholder="To Month" oninput="updatePreview()" data-type="to-month" value="${data.toMonth || ''}">
+                <input type="text" placeholder="To Year" oninput="updatePreview()" data-type="to-year" value="${data.toYear || ''}">
+                <textarea placeholder="Description" oninput="updatePreview()" data-type="description">${data.description || ''}</textarea>
+                <button class="delete-button" onclick="removeField('experience-${id}')">Delete</button>
+            `;
+            document.getElementById("experience-fields").appendChild(experienceField);
+            saveResumeState();
+        }
+
+        function updateExperiencePreview() {
+            const experiencePreview = document.getElementById("preview-experience");
+            experiencePreview.innerHTML = "";
+            document.querySelectorAll("#experience-fields .content-group").forEach(field => {
+                const company = field.querySelector('input[data-type="company"]').value || "Company Name";
+                const location = field.querySelector('input[data-type="location"]').value || "Location";
+                const title = field.querySelector('input[data-type="title"]').value || "Job Title";
+                const from_month = field.querySelector('input[data-type="from-month"]').value || "Month";
+                const from_year = field.querySelector('input[data-type="from-year"]').value || "Year";
+                const to_month = field.querySelector('input[data-type="to-month"]').value || "Month";
+                const to_year = field.querySelector('input[data-type="to-year"]').value || "Year";
+                const description = field.querySelector('textarea[data-type="description"]').value || "Description";
+                experiencePreview.innerHTML += `
+                    <div class="content-group">
+                        <div class="entry-header">
+                            <span class="entry-title">${company}, ${location}</span>
+                            <span class="entry-date">${from_month} ${from_year} – ${to_month} ${to_year}</span>
+                        </div>
+                        <div class="entry-subtitle">${title}</div>
+                        <div class="entry-description">
+                            <ul>${description.split('\n').filter(line => line.trim()).map(line => `<li>${line}</li>`).join('')}</ul>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        // Projects Add/Delete
+        function addProject(data = {}) {
+            const id = Date.now();
+            const projectField = document.createElement("div");
+            projectField.classList.add("content-group");
+            projectField.setAttribute("id", `project-${id}`);
+            projectField.innerHTML = `
+                <input type="text" placeholder="Project Name" oninput="updatePreview()" data-type="project" value="${data.project || ''}">
+                <input type="text" placeholder="From Month" oninput="updatePreview()" data-type="from-month" value="${data.fromMonth || ''}">
+                <input type="text" placeholder="From Year" oninput="updatePreview()" data-type="from-year" value="${data.fromYear || ''}">
+                <input type="text" placeholder="To Month" oninput="updatePreview()" data-type="to-month" value="${data.toMonth || ''}">
+                <input type="text" placeholder="To Year" oninput="updatePreview()" data-type="to-year" value="${data.toYear || ''}">
+                <textarea placeholder="Description" oninput="updatePreview()" data-type="description">${data.description || ''}</textarea>
+                <button class="delete-button" onclick="removeField('project-${id}')">Delete</button>
+            `;
+            document.getElementById("project-fields").appendChild(projectField);
+            saveResumeState();
+        }
+
+        function updateProjectPreview() {
+            const projectPreview = document.getElementById("preview-project");
+            projectPreview.innerHTML = "";
+            document.querySelectorAll("#project-fields .content-group").forEach(field => {
+                const project = field.querySelector('input[data-type="project"]').value || "Project Name";
+                const from_month = field.querySelector('input[data-type="from-month"]').value || "Month";
+                const from_year = field.querySelector('input[data-type="from-year"]').value || "Year";
+                const to_month = field.querySelector('input[data-type="to-month"]').value || "Month";
+                const to_year = field.querySelector('input[data-type="to-year"]').value || "Year";
+                const description = field.querySelector('textarea[data-type="description"]').value || "Description";
+                projectPreview.innerHTML += `
+                    <div class="content-group">
+                        <div class="entry-header">
+                            <span class="entry-title">${project}</span>
+                            <span class="entry-date">${from_month} ${from_year} – ${to_month} ${to_year}</span>
+                        </div>
+                        <div class="entry-description">
+                            <ul>${description.split('\n').filter(line => line.trim()).map(line => `<li>${line}</li>`).join('')}</ul>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        // Remove dynamic fields
+        function removeField(id) {
+            const field = document.getElementById(id);
+            if (field) field.remove();
+            updatePreview();
+            saveResumeState();
+        }
+
+        document.getElementById('download-pdf').addEventListener('click', function() {
+      var element = document.getElementById('resume');
+  
+      // Options for html2pdf
+      var options = {
+        margin: [10, 10, 10, 10],
+        filename: 'resume.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['css', 'legacy'] }
+      };
+  
+      // Generate PDF
+      html2pdf().from(element).set(options).save();
+    });
+
+    </script>
+    <script type="module">
+    // Import Firebase SDK components
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
+    // Your Firebase configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyBhd2TdGnJspmv62dr6DOQMsyu_HOlwhZ8",
+        authDomain: "resume-builder-c55d3.firebaseapp.com",
+        projectId: "resume-builder-c55d3",
+        storageBucket: "resume-builder-c55d3.appspot.com",
+        messagingSenderId: "329272789238",
+        appId: "1:329272789238:web:6d2f3044ff45211ff4c4d7"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const fullname = sessionStorage.getItem('fullname');
+    const email = sessionStorage.getItem('email');
+    const scores = sessionStorage.getItem('scores');
+
+    function getLoggedInUser() {
+        const storedAuthUser = localStorage.getItem('authUser');
+        if (storedAuthUser) {
+            try {
+                return JSON.parse(storedAuthUser);
+            } catch (error) {
+                console.warn('Failed to parse authUser from localStorage', error);
+            }
+        }
+        return null;
+    }
+
+    function getUserIdentity() {
+        const authUser = getLoggedInUser();
+        return {
+            email: sessionStorage.getItem('email') || authUser?.email || '',
+            fullname: sessionStorage.getItem('fullname') || authUser?.name || authUser?.fullname || ''
+        };
+    }
+
+    // Fetch scores from Firebase and display the keys in preview-skills div
+    async function fetchScores() {
+    const { email } = getUserIdentity();
+    console.log("Attempting to fetch scores. Email:", email);
+    
+    if (!email) {
+        alert("Please log in first to add your assessed skills.");
+        console.error("User not logged in.");
+        return;
+    }
+
+    const userDocRef = doc(db, "users", email);
+
+    try {
+        const userDoc = await getDoc(userDocRef);
+
+        if (userDoc.exists()) {
+            const userData = userDoc.data();
+            const scores = userData.scores || {}; // Fetch scores map, default to empty object
+
+            // Fetch keys only from the scores object
+            const keys = Object.keys(scores);
+            console.log("Skills from assessments:", keys, scores);
+
+            if (keys.length === 0) {
+                alert("No assessment results found. Please take some skill assessments first!");
+                return;
+            }
+
+            // Find the div with class 'preview-skills'
+            const previewSkillsDiv = document.getElementById("preview-skills");
+            if (previewSkillsDiv) {
+                // Clear previous content
+                previewSkillsDiv.innerHTML = '';
+                
+                // Create a new div to hold the skills keys (without scores)
+                const skillsDiv = document.createElement('div');
+                skillsDiv.classList.add('skills-list');
+
+                // Show ALL skills (lowered threshold or removed it), display WITHOUT scores
+                const categoryDisplayMap = { CODE: 'Programming' };
+                const skillsList = keys.map(key => formatSkillName(categoryDisplayMap[key] || key)).join(', ');
+                skillsDiv.innerHTML = skillsList;
+                console.log("Adding skills to resume:", skillsList);
+
+                // Append the new div inside the preview-skills div
+                previewSkillsDiv.appendChild(skillsDiv);
+                alert(`Added ${keys.length} skills from assessments to your resume!`);
+            }
+        } else {
+            alert("No profile found. Please create a profile first!");
+            console.log("User document does not exist");
+        }
+    } catch (error) {
+        console.error("Error fetching scores:", error);
+        alert("Error loading skills: " + error.message);
+    }
+}
+
+
+    // Add event listener to the button
+    const skillsbtn = document.getElementById('addSkills');
+    skillsbtn.addEventListener('click', fetchScores);
+    document.getElementById('skillsAssessmentPage').addEventListener('click', function() {
+    window.location.href = 'test.html'; // Redirect to test.html
+});
+</script>
+
+
+</body>
+</html>

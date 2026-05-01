@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <link rel="stylesheet" href="register.css">
+</head>
+<body>
+    <div class="back-img">
+        
+        <img src="icons/logo.png" class="logo">
+        <h1>SKILLCHECK RESUME</h1>
+        <p class="tagline">Level Up Your Resume with Verified Skills!</p>
+    </div>
+
+    <div class="container">
+        <h2>Register</h2>
+        <H6>Welcome to SkillCheck Resume!</H6>
+        <input type="text" id="fullname" placeholder="Full Name">
+        <input type="email" id="email" placeholder="Email">
+        <input type="password" id="password" placeholder="Password">
+        <button id="registerBtn">Register</button>
+        <a href="login.html">Already have an account? Login</a>
+    </div>
+
+
+    <script type="module">
+        // Firebase SDK Imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBhd2TdGnJspmv62dr6DOQMsyu_HOlwhZ8",
+            authDomain: "resume-builder-c55d3.firebaseapp.com",
+            projectId: "resume-builder-c55d3",
+            storageBucket: "resume-builder-c55d3.appspot.com",
+            messagingSenderId: "329272789238",
+            appId: "1:329272789238:web:6d2f3044ff45211ff4c4d7"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Registration Logic
+        document.getElementById('registerBtn').addEventListener('click', async () => {
+            const fullname = document.getElementById('fullname').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            if (fullname && email && password) {
+                try {
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    const user = userCredential.user;
+
+                    // Save user details in Firestore
+                    await setDoc(doc(db, 'users', user.uid), {
+                        fullname: fullname,
+                        email: email
+                    });
+
+                    // Store details in sessionStorage
+                    sessionStorage.setItem('fullname', fullname);
+                    sessionStorage.setItem('email', email);
+
+                    // Redirect to user details page
+                    window.location.href = 'user-details.html';
+                } catch (error) {
+                    console.error('Error registering user:', error);
+                    alert(error.message);
+                }
+            } else {
+                alert("Please fill out all fields.");
+            }
+        });
+    </script>
+
+</body>
+</html>

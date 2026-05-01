@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="login.css">
+</head>
+<body>
+
+    <div class="back-img">
+        
+        <img src="icons/logo.png" class="logo">
+        <h1>SKILLCHECK RESUME</h1>
+        <p class="tagline">Level Up Your Resume with Verified Skills!</p>
+    </div>
+    <div class="container">
+        <h2>Login</h2>
+        <h6>Welcome Back to SkillCheck Resume!</h6>
+        <input type="email" id="email" placeholder="Email">
+        <input type="password" id="password" placeholder="Password">
+        <button id="loginBtn">Login</button>
+        <a href="index.html">Don't have an account? Register</a>
+    </div>
+
+    <script type="module">
+        // Firebase SDK Imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
+        // Your Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBhd2TdGnJspmv62dr6DOQMsyu_HOlwhZ8",
+            authDomain: "resume-builder-c55d3.firebaseapp.com",
+            projectId: "resume-builder-c55d3",
+            storageBucket: "resume-builder-c55d3.appspot.com",
+            messagingSenderId: "329272789238",
+            appId: "1:329272789238:web:6d2f3044ff45211ff4c4d7"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Login Logic
+        document.getElementById('loginBtn').addEventListener('click', async () => {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            if (email && password) {
+                try {
+                    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                    const user = userCredential.user;
+
+                    // Retrieve user details from Firestore
+                    const userDoc = await getDoc(doc(db, 'users', user.uid));
+                    if (userDoc.exists()) {
+                        const userData = userDoc.data();
+                        const fullname = userData.fullname;
+
+                        // Store details in sessionStorage
+                        sessionStorage.setItem('fullname', fullname);
+                        sessionStorage.setItem('email', email);
+
+                        // Redirect to user details page
+                        window.location.href = 'user-details.html';
+                    } else {
+                        console.error('No user data found');
+                    }
+                } catch (error) {
+                    console.error('Error logging in user:', error);
+                    alert(error.message);
+                }
+            } else {
+                alert("Please fill out all fields.");
+            }
+        });
+    </script>
+
+</body>
+</html>

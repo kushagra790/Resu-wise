@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            /* display: flex;
+            justify-content: center;
+            align-items: center; */
+            height: 100vh;
+        }
+        .container{
+            display: flex;
+            justify-content: space-between;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            height: 5%;
+            margin: 0%;
+            background-color: #a0b2b4;
+        }
+        .nav-cont{
+            display: flex;
+            margin-top: 30px;
+            margin-left: 10px;
+            justify-content: space-between;
+            width: 46%;
+        }
+        .cont1{
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            height: 250px;
+            margin: 0%;
+            width: 250px;
+            background-color: #96d696;
+        }
+        .cont2{
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            height: 250px;
+            margin: 0%;
+            width: 250px;
+            background-color: #ffc799;
+        }
+        .container p {
+            font-size: 20px;
+            margin: 0px;
+            margin-left: 15px;
+            margin-top: 4px;
+        }
+        .cont1 p, .cont2 p {
+            font-size: 20px;
+        }
+        .container button {
+            padding: 10px 20px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .container h2{
+            color: black;
+            margin: 0%;
+        }
+        .logo{
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin: 0%;
+            z-index: 1;
+            position: absolute;
+            top: 20px;
+            left: 20px;
+        }
+        .black{
+            background-color: black;
+            height: 35px;
+            width: 35px;
+            border-radius: 50%;
+            z-index: 0;
+        }
+        .icon{
+            display: flex;
+            margin: 0%;
+        }
+        .cont1 button{
+            height: 50px;
+            width: 120px;
+            padding: 10px 20px;
+            background-color: #228B22;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: medium;
+        }
+        .cont2 button{
+            height: 50px;
+            width: 120px;
+            padding: 10px 20px;
+            background-color: #fd7e14;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: medium;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="cont">
+        <div class="container">
+            <div class="icon">
+                <div class="black"></div>
+            <img src="icons/logo1.png" class="logo">
+            <p id="userFullname"></p>
+            </div>
+                <h2>SKILLCHECK RESUME</h2>
+                <!-- <h2>User Details</h2> -->
+                <!-- <p id="userEmail"></p> -->
+                <button id="logoutBtn">Logout</button>
+        </div>
+        <div class="nav-cont">
+            <div class="cont1">
+                <p>Create Resume</p>
+                <button id="createButton">Create</button>
+            </div>
+            <div class="cont2">
+                <p>Take Assessment</p>
+                <button id="testButton">Test</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import Firebase SDK components
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+        import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+
+        // Your Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBhd2TdGnJspmv62dr6DOQMsyu_HOlwhZ8",
+            authDomain: "resume-builder-c55d3.firebaseapp.com",
+            projectId: "resume-builder-c55d3",
+            storageBucket: "resume-builder-c55d3.appspot.com",
+            messagingSenderId: "329272789238",
+            appId: "1:329272789238:web:6d2f3044ff45211ff4c4d7"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Retrieve user info from session storage
+        const fullname = sessionStorage.getItem('fullname');
+        const email = sessionStorage.getItem('email');
+
+        // Display user details
+        document.getElementById('userFullname').textContent ="Welcome, "+fullname + "!";
+        // document.getElementById('userEmail').textContent =email;
+
+        // Logout user
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            signOut(auth)
+                .then(() => {
+                    // Clear session storage
+                    sessionStorage.clear();
+
+                    // Redirect to login page
+                    window.location.href = 'login.html';
+                })
+                .catch((error) => {
+                    console.error('Error logging out:', error);
+                });
+        });
+        
+        function redirectToNewPage() {
+            window.location.href = 'resume-builder.html';
+        }
+        document.getElementById('createButton').addEventListener('click', redirectToNewPage);
+        function redirectToTestPage() {
+            window.location.href = 'test.html';
+        }
+        document.getElementById('testButton').addEventListener('click', redirectToTestPage);
+    </script>
+
+</body>
+</html>
+

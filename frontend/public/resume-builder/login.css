@@ -1,0 +1,91 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0px;
+}
+
+.container {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 400px;
+    height: 400px;
+    position: absolute;
+    left: 62%;
+}
+
+.container h2 {
+    margin-top: 25px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+.container h6{
+    text-align: center;
+    margin-top: -10px;
+    margin-bottom: 40px;
+    color: #28a745;
+}
+
+.container input {
+    width: 92%;
+    height: 6%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.container button {
+    width: 100%;
+    height: 10%;
+    padding: 10px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.container a {
+    display: block;
+    margin-top: 10px;
+    text-align: center;
+    color: #007bff;
+    font-size: small;
+}
+
+.back-img{
+    height: 100vh;
+    width: 80%;
+    background-image: url('icons/back.jpg');
+    background-size: cover;
+    clip-path: polygon(0% 0%, 80% 0%, 75% 100%, 0% 100%);
+    position: relative;
+    margin-left: -410px;
+}
+.back-img h1{
+    color: white;
+    position: relative;
+    left: 28%;
+    top: 50%;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+.logo{
+    position: absolute;
+    left: 20%;
+    /* top: 15%; */
+}
+.tagline{
+    color: white;
+    font-size: medium;
+    left: 29%;
+    position: relative;
+    top: 55%;
+    color: orange;
+    font-weight: bolder;
+}
