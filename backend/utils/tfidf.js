@@ -147,10 +147,10 @@ class TFIDFVectorizer {
       });
     });
 
-    // Calculate IDF (Inverse Document Frequency)
-    // IDF = log(total_docs / docs_containing_term)
+    // Calculate IDF (Inverse Document Frequency) with smoothing
+    // Use log((N + 1) / (df + 1)) + 1 to avoid zero values for common tokens
     docFreq.forEach((freq, token) => {
-      this.idf.set(token, Math.log(totalDocs / freq));
+      this.idf.set(token, Math.log((totalDocs + 1) / (freq + 1)) + 1);
     });
 
     console.log(`[TF-IDF] Vocabulary size: ${this.vocabulary.size}, Total documents: ${totalDocs}`);

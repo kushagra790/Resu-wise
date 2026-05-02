@@ -1,6 +1,7 @@
 const TFIDFVectorizer = require('../utils/tfidf');
 const { cosineSimilarity } = require('../utils/cosine-similarity');
 const { normalizeKeyword, normalizeKeywords, KEYWORD_NORMALIZATION } = require('../utils/keywordNormalizer');
+const stringSimilarity = require('string-similarity');
 
 // NEW FEATURES: Import enhanced utilities
 const { findFuzzyMatch, batchFuzzyMatch } = require('../utils/fuzzyMatcher');
@@ -225,6 +226,37 @@ function calculateSkillsPresence(resumeSkillsByCategory, jdSkillsByCategory) {
 }
 
 /**
+ * Extract skills section from resume
+ * Handles variations like "Skills", "Technical Skills", "Core Competencies", etc.
+ * Returns text content of the skills section, or empty string if not found
+ */
+function extractSkillsSection(text) {
+  if (!text || typeof text !== 'string') {
+    return '';
+  }
+
+  // Pattern to match skill section headers with various names
+  // Handles: Skills, Technical Skills, Core Competencies, Proficiencies, Expertise, Programming Skills, etc.
+  const skillsSectionPattern = /(?:^|\n)\s*(?:SKILLS|TECHNICAL\s+SKILLS|CORE\s+COMPETENCIES|COMPETENCIES|PROFICIENCIES|EXPERTISE|PROGRAMMING\s+SKILLS|KEY\s+SKILLS|REQUIRED\s+SKILLS|TECHNICAL\s+EXPERTISE|LANGUAGES?\s+&?\s+(?:TOOLS|TECHNOLOGIES|FRAMEWORKS|SKILLS))[:\s]*\n([\s\S]*?)(?=\n\s*(?:EDUCATION|EXPERIENCE|PROJECTS?|SUMMARY|OBJECTIVE|CERTIFICATIONS|AWARDS|REFERENCES|PROFESSIONAL|WORK|$))/i;
+
+  const match = text.match(skillsSectionPattern);
+  
+  if (match && match[1]) {
+    return match[1].trim();
+  }
+
+  // Fallback: look for content between "Skills" and next major section
+  const fallbackPattern = /(?:^|\n)\s*SKILLS[:\s]*\n([\s\S]*?)(?=\n\s*[A-Z][A-Z\s]{2,}:|$)/i;
+  const fallbackMatch = text.match(fallbackPattern);
+  
+  if (fallbackMatch && fallbackMatch[1]) {
+    return fallbackMatch[1].trim();
+  }
+
+  return '';
+}
+
+/**
  * Detect standard resume sections
  * Returns object with section detection results
  */
@@ -308,68 +340,264 @@ function calculateFormattingScore(resume) {
 }
 
 /**
- * Calculate comprehensive ATS Score with weighted components
- * Weights:
- * - 40% Keyword Density
- * - 30% Skills Presence (NO ARTIFICIAL INFLATION)
- * - 20% Resume Sections
- * - 10% Formatting Indicators
- * 
- * This score reflects actual resume quality relative to JD requirements
+ * Calculate ATS Score based on resume quality (independent of JD)
+ * Evaluates structure, formatting, and completeness
  */
-function calculateAtsScore(resume, jd, resumeSkillsByCategory, jdSkillsByCategory) {
-  // Component 1: Keyword Density (40%)
-  const keywordDensity = calculateKeywordDensity(resume, jd);
-  console.log('[ATS] Keyword Density: ' + keywordDensity.toFixed(2) + '%');
+function calculateAtsScoreResumeOnly(resume) {
+  if (!resume || typeof resume !== 'string') {
+    return { score: 0, breakdown: {} };
+  }
 
-  // Component 2: Skills Presence (30%)
-  const skillsPresence = calculateSkillsPresence(
-    resumeSkillsByCategory || {},
-    jdSkillsByCategory || {}
-  );
-  console.log('[ATS] Skills Presence: ' + skillsPresence.toFixed(2) + '%');
+  const lowerResume = resume.toLowerCase();
+  let score = 0;
+  const breakdown = {};
 
-  // Component 3: Resume Sections (20%)
-  const sectionDetection = detectResumeSections(resume);
-  const sectionsScore = sectionDetection.score;
-  console.log('[ATS] Sections Score: ' + sectionsScore.toFixed(2) + '%');
+  // 1. Section Quality (25% weight)
+  const sections = {
+    summary: /(?:summary|objective|professional summary|about|profile)/i,
+    skills: /(?:skills|technical skills|core competencies|competencies|expertise)/i,
+    education: /(?:education|degree|university|college|school)/i,
+    projects: /(?:projects?|portfolio|work samples)/i,
+    experience: /(?:experience|professional experience|work experience|employment|career)/i
+  };
 
-  // Component 4: Formatting Indicators (10%)
-  const formattingScoreValue = calculateFormattingScore(resume);
-  console.log('[ATS] Formatting Score: ' + formattingScoreValue.toFixed(2) + '%');
+  const detectedSections = Object.entries(sections)
+    .filter(([, regex]) => regex.test(lowerResume))
+    .map(([section]) => section);
 
-  // Calculate weighted score (no artificial capping)
-  const finalScore = Math.round(
-    (keywordDensity * 0.4) +
-    (skillsPresence * 0.3) +
-    (sectionsScore * 0.2) +
-    (formattingScoreValue * 0.1)
-  );
+  const sectionScore = Math.min((detectedSections.length / Object.keys(sections).length) * 100, 100);
+  breakdown.sections = {
+    detected: detectedSections,
+    count: detectedSections.length,
+    score: Math.round(sectionScore)
+  };
+  score += breakdown.sections.score * 0.25;
 
-  // Ensure score is a valid number
-  const validFinalScore = isNaN(finalScore) ? 0 : Math.max(0, Math.min(100, finalScore));
+  // 2. Formatting & Readability (35% weight)
+  let formattingScore = 0;
+  if (/[-•*]\s/m.test(resume)) formattingScore += 30;
+  const lineCount = (resume.match(/\n/g) || []).length;
+  if (lineCount > 12) formattingScore += 25;
+  if (/\b(\d{4}|\d{1,2}\/\d{1,2}\/\d{4}|january|february|march|april|may|june|july|august|september|october|november|december)\b/i.test(resume)) formattingScore += 25;
+  if (/([\s]{2,}|\t|[—–-]\s|\|)/g.test(resume)) formattingScore += 20;
+  breakdown.formatting = { score: Math.min(formattingScore, 100) };
+  score += breakdown.formatting.score * 0.35;
 
-  console.log('[ATS] Final ATS Score: ' + validFinalScore + '%');
+  // 3. Technical Skills Presence (25% weight)
+  const skillsKeywords = ['javascript', 'typescript', 'react', 'nextjs', 'node', 'nodejs', 'express', 'redux', 'html', 'css', 'tailwind', 'git', 'docker', 'jest', 'github'];
+  const foundSkills = new Set();
+  skillsKeywords.forEach(skill => {
+    if (lowerResume.includes(skill)) {
+      foundSkills.add(skill);
+    }
+  });
+  const skillsPresenceScore = Math.min((foundSkills.size / skillsKeywords.length) * 100, 100);
+  breakdown.skillsPresence = {
+    detected: Array.from(foundSkills),
+    score: Math.round(skillsPresenceScore)
+  };
+  score += breakdown.skillsPresence.score * 0.25;
+
+  // 4. Readability / Content Quality (15% weight)
+  let readabilityScore = 0;
+  if (resume.length > 450) readabilityScore += 35;
+  const paragraphCount = resume.split(/\n\n+/).filter(p => p.trim().length > 20).length;
+  if (paragraphCount >= 3) readabilityScore += 30;
+  const avgSentenceLength = resume.split(/[.!?]+/).reduce((sum, s) => sum + s.trim().length, 0) / Math.max(resume.split(/[.!?]+/).filter(s => s.trim().length > 0).length, 1);
+  if (avgSentenceLength < 130) readabilityScore += 35;
+  breakdown.readability = { score: Math.min(readabilityScore, 100) };
+  score += breakdown.readability.score * 0.15;
+
+  // 5. Contact Bonus (up to 10 points)
+  let contactBonus = 0;
+  if (/\b\d{10,}\b/.test(lowerResume)) contactBonus += 4;
+  if (/\b[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}\b/i.test(lowerResume)) contactBonus += 4;
+  if (/(?:linkedin|github|portfolio|website)/i.test(lowerResume)) contactBonus += 2;
+  breakdown.contact = { score: Math.min(contactBonus, 10) };
 
   return {
-    score: validFinalScore,  // Return actual score without artificial capping
+    score: Math.round(Math.min(score + breakdown.contact.score, 100)),
+    breakdown
+  };
+}
+
+/**
+ * Calculate Match Score between Resume and JD
+ * Formula: (Skill Match × 0.60) + (TF-IDF × 0.20) + (Semantic × 0.20)
+ * PRIORITIZES SKILL MATCHING as the primary scoring factor
+ */
+function calculateMatchScore(resume, jd, resumeSkillsByCategory, jdSkillsByCategory) {
+  // Component 1: Skill Match (60%) - PRIMARY FACTOR
+  const skillMatchScore = calculateSkillsMatch(resumeSkillsByCategory, jdSkillsByCategory);
+  
+  // Component 2: TF-IDF Similarity (20%)
+  const tfidfScore = calculateTFIDFSimilarity(resume, jd, resumeSkillsByCategory, jdSkillsByCategory);
+  
+  // Component 3: Semantic Similarity (20%)
+  const semanticScore = calculateSemanticSimilarityScore(resume, jd, resumeSkillsByCategory, jdSkillsByCategory);
+  
+  const finalScore = Math.round(
+    (skillMatchScore * 0.60) +
+    (tfidfScore * 0.20) +
+    (semanticScore * 0.20)
+  );
+
+  return {
+    score: Math.max(0, Math.min(100, finalScore)),
     breakdown: {
-      keywordDensity: Math.round(keywordDensity),
-      skillsPresence: Math.round(skillsPresence),
-      sectionDetection: {
-        detected: sectionDetection.detected,
-        count: sectionDetection.count,
-        score: Math.round(sectionsScore)
-      },
-      formattingIndicators: Math.round(formattingScoreValue)
+      skillMatch: Math.round(skillMatchScore),
+      tfidf: Math.round(tfidfScore),
+      semantic: Math.round(semanticScore)
     },
     weights: {
-      keywordDensity: 0.4,
-      skillsPresence: 0.3,
-      sectionDetection: 0.2,
-      formattingIndicators: 0.1
+      skillMatch: 0.60,
+      tfidf: 0.20,
+      semantic: 0.20
     }
   };
+}
+
+/**
+ * Calculate TF-IDF similarity between resume and JD
+ */
+function getTitle(text) {
+  if (!text || typeof text !== 'string') {
+    return '';
+  }
+
+  const lines = text.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+  return lines.length > 0 ? lines[0].toLowerCase() : '';
+}
+
+function calculateTitleSimilarity(resume, jd) {
+  const resumeTitle = getTitle(resume);
+  const jdTitle = getTitle(jd);
+  if (!resumeTitle || !jdTitle) return 0;
+  return stringSimilarity.compareTwoStrings(resumeTitle, jdTitle) * 100;
+}
+
+function calculateTokenJaccard(resume, jd) {
+  const tfidf = new TFIDFVectorizer();
+  const resumeTokens = new Set(tfidf.preprocess(resume));
+  const jdTokens = new Set(tfidf.preprocess(jd));
+  const sharedTokens = [...resumeTokens].filter(token => jdTokens.has(token)).length;
+  const totalTokens = new Set([...resumeTokens, ...jdTokens]).size;
+  return totalTokens === 0 ? 0 : (sharedTokens / totalTokens) * 100;
+}
+
+function calculateCategoryOverlap(resumeSkillsByCategory, jdSkillsByCategory) {
+  const resumeCategories = Object.entries(resumeSkillsByCategory || {})
+    .filter(([, skills]) => skills && skills.length > 0)
+    .map(([category]) => category);
+  const jdCategories = Object.entries(jdSkillsByCategory || {})
+    .filter(([, skills]) => skills && skills.length > 0)
+    .map(([category]) => category);
+
+  if (jdCategories.length === 0) return 0;
+  const shared = resumeCategories.filter(category => jdCategories.includes(category)).length;
+  return (shared / jdCategories.length) * 100;
+}
+
+function calculateTFIDFSimilarity(resume, jd, resumeSkillsByCategory = {}, jdSkillsByCategory = {}) {
+  try {
+    const exactKeywordOverlap = calculateKeywordDensity(resume, jd);
+    const categoryOverlap = calculateCategoryOverlap(resumeSkillsByCategory, jdSkillsByCategory);
+    const titleSimilarity = calculateTitleSimilarity(resume, jd);
+    const tokenJaccard = calculateTokenJaccard(resume, jd);
+
+    const score = Math.round(
+      (exactKeywordOverlap * 0.20) +
+      (categoryOverlap * 0.50) +
+      (tokenJaccard * 0.15) +
+      (titleSimilarity * 0.15) +
+      15
+    );
+
+    return Math.min(100, score);
+  } catch (error) {
+    console.error('TF-IDF calculation error:', error);
+    return 0;
+  }
+}
+
+/**
+ * Calculate semantic similarity
+ */
+function calculateSemanticSimilarityScore(resume, jd, resumeSkillsByCategory = {}, jdSkillsByCategory = {}) {
+  try {
+    const semanticResult = calculateSemanticSimilarity(resume, jd);
+    const keywordDensityScore = calculateKeywordDensity(resume, jd);
+    const categoryOverlap = calculateCategoryOverlap(resumeSkillsByCategory, jdSkillsByCategory);
+    const titleSimilarity = calculateTitleSimilarity(resume, jd);
+    const tokenJaccard = calculateTokenJaccard(resume, jd);
+
+    const finalScore = Math.round(
+      (semanticResult.score * 0.08) +
+      (keywordDensityScore * 0.12) +
+      (categoryOverlap * 0.55) +
+      (titleSimilarity * 0.15) +
+      (tokenJaccard * 0.10) +
+      15
+    );
+
+    return Math.min(100, finalScore);
+  } catch (error) {
+    console.error('Semantic similarity error:', error);
+    return 0;
+  }
+}
+
+/**
+ * Calculate skill match score
+ */
+function calculateSkillsMatch(resumeSkills, jdSkills) {
+  if (!resumeSkills || !jdSkills) return 0;
+
+  const flatResumeSkills = Object.values(resumeSkills).flat();
+  const normalizedResumeSkills = flatResumeSkills.map(skill => normalizeKeyword(skill));
+  const resumeSkillSet = new Set(normalizedResumeSkills);
+
+  let weightedMatches = 0;
+  let totalJdSkills = 0;
+
+  Object.values(jdSkills).forEach(jdCategorySkills => {
+    jdCategorySkills.forEach(jdSkill => {
+      totalJdSkills += 1;
+      const normalizedJdSkill = normalizeKeyword(jdSkill);
+
+      if (resumeSkillSet.has(normalizedJdSkill)) {
+        weightedMatches += 1;
+        return;
+      }
+
+      const fuzzyMatch = findFuzzyMatch(jdSkill, flatResumeSkills, 0.35);
+      if (fuzzyMatch && fuzzyMatch.score >= 0.75) {
+        weightedMatches += 0.8;
+        return;
+      }
+
+      const relationship = calculateRelationshipScore(jdSkill, flatResumeSkills);
+      if (relationship && relationship.score > 0) {
+        weightedMatches += Math.min(0.6, relationship.score / 100);
+        return;
+      }
+
+      // Partial credit for same broad category if the JD skill is from a category also present in the resume
+      const resumeCategories = Object.entries(resumeSkills)
+        .filter(([, skills]) => skills.length > 0)
+        .map(([category]) => category);
+      const jdCategories = Object.entries(jdSkills)
+        .filter(([, skills]) => skills.length > 0)
+        .map(([category]) => category);
+
+      const categoryOverlap = jdCategories.some(category => resumeCategories.includes(category));
+      if (categoryOverlap) {
+        weightedMatches += 0.75;
+      }
+    });
+  });
+
+  return totalJdSkills > 0 ? Math.min(100, Math.round((weightedMatches / totalJdSkills) * 100)) : 0;
 }
 
 /**
@@ -508,7 +736,9 @@ function analyzeResumeAndJD(resume, jobDescription) {
     }
 
     // ============ STEP 1: Extract Skills ============
-    const resumeSkillsByCategory = extractSkillsByCategory(resume);
+    // Extract skills ONLY from the Skills section of the resume
+    const skillsSection = extractSkillsSection(resume);
+    const resumeSkillsByCategory = extractSkillsByCategory(skillsSection.length > 0 ? skillsSection : resume);
     const jdSkillsByCategory = extractSkillsByCategory(jobDescription);
 
     // Find matched and missing skills by category
@@ -547,9 +777,10 @@ function analyzeResumeAndJD(resume, jobDescription) {
 
     // ============ STEP 4: Calculate Semantic Similarity (NEW) ============
     console.log('[SEMANTIC] Calculating semantic similarity...');
-    const semanticResult = calculateSemanticSimilarity(resume, jobDescription);
+    // Use only Skills section from resume for semantic analysis
+    const semanticResult = calculateSemanticSimilarity(skillsSection.length > 0 ? skillsSection : resume, jobDescription);
     const semanticScore = semanticResult.score;
-    const semanticInsights = getSemanticInsights(resume, jobDescription);
+    const semanticInsights = getSemanticInsights(skillsSection.length > 0 ? skillsSection : resume, jobDescription);
     console.log('[SEMANTIC] Semantic score:', semanticScore + '%');
 
     // ============ STEP 5: Extract Experience ============
@@ -558,14 +789,17 @@ function analyzeResumeAndJD(resume, jobDescription) {
     const experienceMatch = calculateExperienceMatch(resumeExperience, jdExperience);
 
     // Extract flat arrays for backward compatibility
-    const resumeSkills = extractKeywords(resume);
+    // For resume: use only Skills section
+    const resumeSkills = extractKeywords(skillsSection.length > 0 ? skillsSection : resume);
     const jdSkills = extractKeywords(jobDescription);
 
     // ============ STEP 6: TF-IDF Vectorization ============
+    // Use skills section for TF-IDF matching with JD
+    const textForTFIDF = skillsSection.length > 0 ? skillsSection : resume;
     const vectorizer = new TFIDFVectorizer();
-    vectorizer.fit([resume, jobDescription]);
+    vectorizer.fit([textForTFIDF, jobDescription]);
 
-    const resumeTokens = vectorizer.preprocess(resume);
+    const resumeTokens = vectorizer.preprocess(textForTFIDF);
     const jdTokens = vectorizer.preprocess(jobDescription);
     
     const resumeTokensSet = new Set(resumeTokens);
@@ -576,7 +810,7 @@ function analyzeResumeAndJD(resume, jobDescription) {
     console.log('[TF-IDF] Total vocabulary size:', vectorizer.getVocabularySize());
     console.log('[TF-IDF] Shared tokens:', sharedTokens.size);
 
-    const resumeVector = vectorizer.transform(resume);
+    const resumeVector = vectorizer.transform(textForTFIDF);
     const jdVector = vectorizer.transform(jobDescription);
 
     let tfidfScore = Math.round(cosineSimilarity(resumeVector, jdVector) * 100);
@@ -600,11 +834,28 @@ function analyzeResumeAndJD(resume, jobDescription) {
       tfidfScore = Math.max(enhancedScore, 30);
     }
 
-    // ============ STEP 7: Calculate ATS Score ============
-    const atsScoreResult = calculateAtsScore(resume, jobDescription, resumeSkillsByCategory, jdSkillsByCategory);
+    // ============ STEP 7: Calculate Separate Scores ============
+    // ATS Score: Resume-only quality
+    const atsScoreResult = calculateAtsScoreResumeOnly(resume);
     const atsScore = atsScoreResult.score;
 
-    // ============ STEP 8: Skill Relationship Analysis (NEW) ============
+    // Match Score: Resume-JD compatibility
+    // Use only Skills section from resume for matching
+    const matchScoreResult = calculateMatchScore(skillsSection.length > 0 ? skillsSection : resume, jobDescription, resumeSkillsByCategory, jdSkillsByCategory);
+    const matchScore = matchScoreResult.score;
+
+    // ============ STEP 8: Check for Generic JD Warning ============
+    const jdTechnicalKeywords = Object.values(jdSkillsByCategory).flat().length;
+    const warnings = [];
+    if (jdTechnicalKeywords < 5) {
+      warnings.push({
+        type: 'generic_jd',
+        message: 'Job description appears generic with few technical requirements. Consider tailoring your resume to specific job requirements.',
+        severity: 'medium'
+      });
+    }
+
+    // ============ STEP 9: Skill Relationship Analysis ============
     console.log('[SKILL RELATIONSHIPS] Analyzing skill relationships for missing skills...');
     const relatedSkillMatches = [];
     missingSkillsByLevel.required.forEach(missSkill => {
@@ -619,69 +870,55 @@ function analyzeResumeAndJD(resume, jobDescription) {
       }
     });
 
-    // ============ STEP 9: Calculate Final Scores ============
-    // Now blend three sources: TF-IDF, ATS, and Semantic
-    const finalMatchScore = Math.round(
-      (tfidfScore * 0.4) +
-      (atsScore * 0.35) +
-      (semanticScore * 0.25)
-    );
+    // ============ STEP 10: Generate Enhanced Suggestions ============
+    const suggestions = generateEnhancedSuggestions(missingSkillsByLevel, relatedSkillMatches, atsScoreResult.breakdown);
 
-    console.log('[FINAL ANALYSIS] ===========================');
-    console.log('[FINAL ANALYSIS] TF-IDF Score: ' + tfidfScore + '%');
-    console.log('[FINAL ANALYSIS] ATS Score: ' + atsScore + '%');
-    console.log('[FINAL ANALYSIS] Semantic Score: ' + semanticScore + '%');
-    console.log('[FINAL ANALYSIS] Final Match Score: ' + finalMatchScore + '%');
-
-    // ============ STEP 10: Generate Strengths & Suggestions ============
-    const strengths = generateStrengths(matchedSkillsByLevel, semanticInsights, experienceMatch);
-    const suggestions = generateSuggestions(missingSkillsByLevel, relatedSkillMatches);
-
-    // ============ STEP 11: Missing Skills Prioritized (NEW) ============
+    // ============ STEP 11: Missing Skills Prioritized ============
     const missingSkillsPrioritized = getMissingSkillsPrioritized(missingSkillsByLevel);
+
+    // ============ STEP 10: Create Score Explanations ============
+    const scoreExplanations = {
+      atsScore: `ATS Score evaluates resume quality and structure independently of the job description. Your score of ${atsScore}% is based on: ${atsScoreResult.breakdown.sections.detected.join(', ')} sections detected, contact information, formatting quality, and technical skills presence.`,
+      matchScore: `Match Score measures how well your resume skills match the job requirements. Score breakdown: Skill Matching (${matchScoreResult.breakdown.skillMatch}%, 60% weight) - PRIMARY FACTOR, TF-IDF text analysis (${matchScoreResult.breakdown.tfidf}%, 20% weight), and semantic similarity (${matchScoreResult.breakdown.semantic}%, 20% weight).`,
+      overall: `Overall assessment combines ATS quality (${atsScore}%) and job match (${matchScore}%) for comprehensive evaluation.`
+    };
 
     // ============ Return Enhanced Results ============
     return {
-      // NEW: Main Scores with breakdown
-      scores: {
-        overallMatch: finalMatchScore,
-        tfidf: tfidfScore,
-        ats: atsScore,
-        semantic: semanticScore,
-        weighted: {
-          required: Math.round((matchedSkillsByLevel.required.length / Math.max(skillRequirements.required.length, 1)) * 100),
-          preferred: Math.round((matchedSkillsByLevel.preferred.length / Math.max(skillRequirements.preferred.length, 1)) * 100),
-          nicetoHave: Math.round((matchedSkillsByLevel.nicetoHave.length / Math.max(skillRequirements.nicetoHave.length, 1)) * 100)
-        }
-      },
+      // NEW: Separate Scores
+      atsScore: atsScore,
+      matchScore: matchScore,
+      tfidfScore: matchScoreResult.breakdown.tfidf,
+      semanticScore: matchScoreResult.breakdown.semantic,
+      skillMatchScore: matchScoreResult.breakdown.skillMatch,
 
-      // NEW: ATS Breakdown
+      // ATS Breakdown
       atsScoreBreakdown: atsScoreResult.breakdown,
 
-      // NEW: Fuzzy Match Results
-      fuzzyMatching: {
-        exactMatches: fuzzyMatches.exact.length,
-        fuzzyMatches: fuzzyMatches.fuzzy,
-        unmatched: fuzzyMatches.unmatched
+      // Match Score Breakdown
+      matchScoreBreakdown: matchScoreResult.breakdown,
+
+      // Warnings
+      warnings: warnings,
+
+      // Enhanced Suggestions
+      suggestions: suggestions,
+
+      // Score Explanations
+      scoreExplanations: scoreExplanations,
+
+      // Keep existing fields for backward compatibility
+      matchPercentage: matchScore,  // Use match score as primary percentage
+      scores: {
+        overallMatch: matchScore,  // For test compatibility
+        tfidf: matchScoreResult.breakdown.tfidf,
+        ats: atsScore,
+        semantic: matchScoreResult.breakdown.semantic
       },
+      tfidfScore: matchScoreResult.breakdown.tfidf,
+      semanticScore: matchScoreResult.breakdown.semantic,
 
-      // NEW: Skill Requirements with Levels
-      skillRequirements: {
-        required: skillRequirements.required,
-        preferred: skillRequirements.preferred,
-        nicetoHave: skillRequirements.nicetoHave
-      },
-
-      matchedSkillsByLevel,
-      missingSkillsByLevel,
-
-      // NEW: Prioritized Missing Skills
-      missingSkillsPrioritized,
-
-      // NEW: Related Skills that Could Help
-      relatedSkillMatches,
-
-      // Original matched/missing
+      // Skills data
       matchedSkills,
       missingSkills,
       extractedResumeSkills: resumeSkillsByCategory,
@@ -696,21 +933,26 @@ function analyzeResumeAndJD(resume, jobDescription) {
         message: experienceMatch.message
       },
 
-      // NEW: Semantic Analysis & Insights
-      semanticAnalysis: {
-        score: semanticScore,
-        insights: semanticInsights,
-        breakdown: semanticResult.breakdown
+      // Fuzzy matching results
+      fuzzyMatching: {
+        exactMatches: fuzzyMatches.exact.length,
+        fuzzyMatches: fuzzyMatches.fuzzy,
+        unmatched: fuzzyMatches.unmatched
       },
 
-      // NEW: Strengths and Suggestions
-      strengths,
-      suggestions,
+      // Skill requirements
+      skillRequirements: {
+        required: skillRequirements.required,
+        preferred: skillRequirements.preferred,
+        nicetoHave: skillRequirements.nicetoHave
+      },
+
+      matchedSkillsByLevel,
+      missingSkillsByLevel,
+      missingSkillsPrioritized,
+      relatedSkillMatches,
 
       // Backward compatibility
-      matchPercentage: finalMatchScore,  // Main score for display
-      tfidfScore: tfidfScore,
-      atsScore: atsScore,
       missingKeywords: jdSkills.filter(skill => !resumeSkills.some(rSkill => rSkill.toLowerCase() === skill.toLowerCase())),
       allRequiredSkills: jdSkills,
       providedSkills: resumeSkills
@@ -821,11 +1063,98 @@ function generateSuggestions(missingSkillsByLevel, relatedSkillMatches) {
   return suggestions;
 }
 
+/**
+ * Generate enhanced, practical suggestions based on ATS score and missing skills
+ */
+function generateEnhancedSuggestions(missingSkillsByLevel, relatedSkillMatches, atsBreakdown) {
+  const suggestions = [];
+
+  // ATS-based suggestions
+  if (atsBreakdown.sections.score < 60) {
+    suggestions.push({
+      priority: 'high',
+      category: 'Resume Structure',
+      action: 'Add missing sections to improve ATS compatibility: Summary, Skills, Education, Experience, Projects',
+      impact: 'high',
+      details: `Detected sections: ${atsBreakdown.sections.detected.join(', ') || 'none'}`
+    });
+  }
+
+  if (atsBreakdown.contact.score < 50) {
+    suggestions.push({
+      priority: 'high',
+      category: 'Contact Information',
+      action: 'Ensure resume includes phone number, email, and professional links (LinkedIn, GitHub, portfolio)',
+      impact: 'high'
+    });
+  }
+
+  if (atsBreakdown.formatting.score < 50) {
+    suggestions.push({
+      priority: 'medium',
+      category: 'Formatting',
+      action: 'Use bullet points, consistent formatting, and clear date formats to improve readability',
+      impact: 'medium'
+    });
+  }
+
+  // Skill-based suggestions
+  if (missingSkillsByLevel.required.length > 0) {
+    const topMissing = missingSkillsByLevel.required.slice(0, 3);
+    suggestions.push({
+      priority: 'high',
+      category: 'Critical Skills Gap',
+      action: `Focus on acquiring these required skills: ${topMissing.join(', ')}. Consider online courses, certifications, or personal projects.`,
+      impact: 'high',
+      skills: topMissing
+    });
+  }
+
+  if (missingSkillsByLevel.preferred.length > 0) {
+    const topPreferred = missingSkillsByLevel.preferred.slice(0, 3);
+    suggestions.push({
+      priority: 'medium',
+      category: 'Preferred Skills',
+      action: `Develop these preferred skills to strengthen your application: ${topPreferred.join(', ')}. Start with tutorials or small projects.`,
+      impact: 'medium',
+      skills: topPreferred
+    });
+  }
+
+  // Role-specific practical suggestions
+  if (relatedSkillMatches.length > 0) {
+    suggestions.push({
+      priority: 'medium',
+      category: 'Leverage Existing Skills',
+      action: 'Highlight transferable skills and related experience in your resume and cover letter',
+      impact: 'medium',
+      examples: relatedSkillMatches.slice(0, 2).map(r => `${r.skill} (related to your ${r.reason})`)
+    });
+  }
+
+  // Generic improvement suggestions
+  suggestions.push({
+    priority: 'low',
+    category: 'Tailor Your Resume',
+    action: 'Customize your resume for each job application by incorporating job-specific keywords naturally',
+    impact: 'low'
+  });
+
+  suggestions.push({
+    priority: 'low',
+    category: 'Quantify Achievements',
+    action: 'Replace generic statements with specific metrics and achievements (e.g., "Improved performance by 30%" instead of "Improved performance")',
+    impact: 'low'
+  });
+
+  return suggestions;
+}
+
 module.exports = {
   analyzeResumeAndJD,
   extractKeywords,
   extractSkillsByCategory,
-  calculateAtsScore,
+  calculateAtsScoreResumeOnly,
   findMatchedAndMissingSkills,
   extractYearsOfExperience,
   calculateExperienceMatch,
@@ -835,5 +1164,6 @@ module.exports = {
   calculateFormattingScore,
   // NEW exports for enhanced features
   generateStrengths,
-  generateSuggestions
+  generateSuggestions,
+  calculateMatchScore
 };
