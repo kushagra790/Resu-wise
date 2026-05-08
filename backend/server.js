@@ -74,6 +74,10 @@ app.use('/api/auth', authRoutes);
 app.use('/api/analyze', analyzeRoutes);
 app.use('/api/history', historyRoutes);
 app.use('/api/quiz', quizRoutes);
+app.use('/auth', authRoutes);
+app.use('/analyze', analyzeRoutes);
+app.use('/history', historyRoutes);
+app.use('/quiz', quizRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
