@@ -558,7 +558,7 @@ const allQuestions = [
   { category:'REDIS', question:'What is Redis HyperLogLog?', answers:{answer_a:'A probabilistic data structure for estimating cardinality',answer_b:'A logging mechanism',answer_c:'A counting mechanism',answer_d:'A data structure'}, correct_answer:'answer_a', difficulty:'hard' },
 ];
 
-async function seedDatabase() {
+async function seedDatabaseLegacy() {
   try {
     await mongoose.connect(MONGODB_URI, {
       useNewUrlParser: true,
