@@ -1,15 +1,15 @@
 const express = require('express');
 const multer = require('multer');
-const { analyzeResumeAndJD } = require('../controllers/resumeAnalyzer');
-const { analyzeUploadedFiles } = require('../controllers/fileUploadAnalyzer');
 
 const router = express.Router();
+const maxUploadMb = Number(process.env.UPLOAD_FILE_SIZE_MB || 2);
+const maxUploadBytes = maxUploadMb * 1024 * 1024;
 
 // Configure multer for file uploads
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 10 * 1024 * 1024 // 10MB limit
+    fileSize: maxUploadBytes
   },
   fileFilter: (req, file, cb) => {
     const allowedMimes = [
@@ -55,7 +55,7 @@ router.post('/text', (req, res) => {
       });
     }
 
-    // Perform analysis
+    const { analyzeResumeAndJD } = require('../controllers/resumeAnalyzer');
     const result = analyzeResumeAndJD(resume, jobDescription);
     
     console.log('Analysis Result:', result);
@@ -121,7 +121,7 @@ router.post(
 
       console.log(`Processing files: ${resumeFile.originalname} and ${jobDescriptionFile.originalname}`);
 
-      // Perform analysis
+      const { analyzeUploadedFiles } = require('../controllers/fileUploadAnalyzer');
       const result = await analyzeUploadedFiles(resumeFile, jobDescriptionFile);
 
       res.json(result);
@@ -147,7 +147,7 @@ router.use((error, req, res, next) => {
       return res.status(400).json({
         success: false,
         error: 'File too large',
-        message: 'File size exceeds 10MB limit'
+        message: `File size exceeds ${maxUploadMb}MB limit`
       });
     }
     

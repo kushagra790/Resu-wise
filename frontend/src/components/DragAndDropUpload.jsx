@@ -8,20 +8,20 @@ const DragAndDropUpload = ({
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState('');
 
-  const ALLOWED_TYPES = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
-  const ALLOWED_EXTENSIONS = ['.pdf', '.docx', '.txt'];
-  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+  const ALLOWED_TYPES = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+  const ALLOWED_EXTENSIONS = ['.pdf', '.docx'];
+  const MAX_FILE_SIZE = 2 * 1024 * 1024;
 
   const validateFile = (file) => {
     // Check file type
     if (!ALLOWED_TYPES.includes(file.type) && !ALLOWED_EXTENSIONS.some(ext => file.name.toLowerCase().endsWith(ext))) {
-      setError('Invalid file format. Please upload PDF, DOCX, or TXT files only.');
+      setError('Invalid file format. Please upload PDF or DOCX files only.');
       return false;
     }
 
     // Check file size
     if (file.size > MAX_FILE_SIZE) {
-      setError('File size exceeds 10MB limit.');
+      setError('File size exceeds 2MB limit.');
       return false;
     }
 
@@ -139,7 +139,7 @@ const DragAndDropUpload = ({
 
               {/* File types hint */}
               <p className="text-gray-400 text-xs mt-3">
-                Supported: PDF, DOCX, TXT (Max 10MB)
+                Supported: PDF, DOCX (Max 2MB)
               </p>
             </div>
           </div>
@@ -227,7 +227,7 @@ const DragAndDropUpload = ({
       <input
         id={`file-input-${label}`}
         type="file"
-        accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
+        accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         onChange={handleInputChange}
         className="hidden"
         aria-label={label}

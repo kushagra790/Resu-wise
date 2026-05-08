@@ -212,7 +212,7 @@ NICE-TO-HAVE
           <p className="text-sm font-medium text-gray-400">
             {dragging ? 'Drop it here!' : 'Drag & drop or click to browse'}
           </p>
-          <p className="text-xs text-gray-600 mt-1">PDF or DOCX · Max 10 MB</p>
+          <p className="text-xs text-gray-600 mt-1">PDF or DOCX · Max 2 MB</p>
           <input
             ref={inputRef}
             type="file"
@@ -360,7 +360,7 @@ NICE-TO-HAVE
               <span className="text-white/20">·</span>
               <span className="text-blue-400 font-semibold">DOCX</span>
               <span className="text-white/20">·</span>
-              <span>Max 10 MB per file</span>
+              <span>Max 2 MB per file</span>
             </div>
           </div>
         )}
