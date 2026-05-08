@@ -1,9 +1,9 @@
 # Deploy ResuWise on Vercel
 
-This repo is configured for a single Vercel project:
+This repo is configured for a single Vercel project using Vercel Services:
 
 - React/Vite frontend builds from `frontend`
-- Express API runs as a Vercel Function from `api/index.js`
+- Express API runs from `backend`
 - API requests stay on the same domain under `/api`
 
 ## 1. Create MongoDB Atlas Database
@@ -24,13 +24,13 @@ In Atlas Network Access, allow Vercel serverless traffic. The simplest setting i
 2. In Vercel, choose **Add New > Project**.
 3. Import the GitHub repo.
 4. Use the repository root as the root directory.
+5. If Vercel asks for the project framework, choose **Services**.
 
-The checked-in `vercel.json` supplies:
+The checked-in `vercel.json` supplies the service mapping:
 
 ```text
-Install Command: npm --prefix backend ci && npm --prefix frontend ci
-Build Command:   npm --prefix frontend run build
-Output Directory: frontend/dist
+frontend: entrypoint frontend, route prefix /
+backend:  entrypoint backend, route prefix /api
 ```
 
 ## 3. Add Environment Variables
